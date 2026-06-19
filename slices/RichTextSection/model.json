@@ -1,0 +1,32 @@
+{
+  "id": "RichTextSection",
+  "type": "SharedSlice",
+  "name": "RichTextSection",
+  "description": "Section heading and body copy",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "description": "Section heading and body copy",
+      "docURL": "https://prismic.io/docs/slices",
+      "version": "initial",
+      "primary": {
+        "heading": {
+          "type": "Text",
+          "config": {
+            "label": "Heading",
+            "placeholder": "Section heading"
+          }
+        },
+        "body": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Body",
+            "multi": "paragraph,strong,em,hyperlink,list-item,o-list-item,heading2,heading3"
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

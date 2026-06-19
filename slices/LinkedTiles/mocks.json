@@ -1,0 +1,78 @@
+[
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"heading": {
+				"__TYPE__": "FieldContent",
+				"value": "piece",
+				"type": "Text"
+			}
+		},
+		"items": [
+			{
+				"__TYPE__": "GroupItemContent",
+				"value": [
+					[
+						"title",
+						{
+							"__TYPE__": "FieldContent",
+							"value": "difficult",
+							"type": "Text"
+						}
+					],
+					[
+						"summary",
+						{
+							"__TYPE__": "StructuredTextContent",
+							"value": [
+								{
+									"type": "paragraph",
+									"content": {
+										"text": "Elit nulla officia Lorem culpa nulla culpa occaecat adipisicing qui fugiat reprehenderit. Labore Lorem consequat proident cillum aliquip laboris duis do adipisicing irure tempor incididunt. Incididunt quis sunt eu adipisicing laboris veniam est voluptate aute."
+									}
+								}
+							]
+						}
+					],
+					[
+						"link",
+						{
+							"key": "e21171e2-2355-4f8d-831a-24ec855a3992",
+							"__TYPE__": "LinkContent",
+							"value": {
+								"__TYPE__": "DocumentLink",
+								"id": "mock_document_id"
+							}
+						}
+					],
+					[
+						"image",
+						{
+							"origin": {
+								"id": "main",
+								"url": "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2",
+								"width": 3648,
+								"height": 4560
+							},
+							"url": "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2",
+							"width": 3648,
+							"height": 4560,
+							"edit": {
+								"zoom": 1,
+								"crop": {
+									"x": 0,
+									"y": 0
+								},
+								"background": "transparent"
+							},
+							"alt": "till",
+							"credits": null,
+							"__TYPE__": "ImageContent"
+						}
+					]
+				]
+			}
+		]
+	}
+]

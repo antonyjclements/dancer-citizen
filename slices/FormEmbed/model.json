@@ -1,0 +1,31 @@
+{
+  "id": "FormEmbed",
+  "type": "SharedSlice",
+  "name": "FormEmbed",
+  "description": "Embedded form code",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "description": "Embedded form code",
+      "docURL": "https://prismic.io/docs/slices",
+      "version": "initial",
+      "primary": {
+        "title": {
+          "type": "Text",
+          "config": {
+            "label": "Title",
+            "placeholder": "Form title"
+          }
+        },
+        "embed": {
+          "type": "Embed",
+          "config": {
+            "label": "Embed"
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

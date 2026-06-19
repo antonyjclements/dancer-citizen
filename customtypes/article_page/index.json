@@ -1,0 +1,168 @@
+{
+  "id": "article_page",
+  "label": "Article Page",
+  "repeatable": true,
+  "status": true,
+  "json": {
+    "Main": {
+      "uid": {
+        "type": "UID",
+        "config": {
+          "label": "UID",
+          "placeholder": "article-page"
+        }
+      },
+      "title": {
+        "type": "Text",
+        "config": {
+          "label": "Title",
+          "placeholder": "Article title"
+        }
+      },
+      "meta_title": {
+        "type": "Text",
+        "config": {
+          "label": "Meta title",
+          "placeholder": "SEO title"
+        }
+      },
+      "meta_description": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Meta description",
+          "single": "paragraph"
+        }
+      },
+      "hero_title": {
+        "type": "Text",
+        "config": {
+          "label": "Hero title",
+          "placeholder": "Display title"
+        }
+      },
+      "hero_subtitle": {
+        "type": "Text",
+        "config": {
+          "label": "Hero subtitle",
+          "placeholder": "Byline or secondary title"
+        }
+      },
+      "hero_image": {
+        "type": "Image",
+        "config": {
+          "label": "Hero image"
+        }
+      },
+      "hero_image_credit": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Hero image credit",
+          "single": "paragraph"
+        }
+      },
+      "body": {
+        "type": "Slices",
+        "fieldset": "Body",
+        "config": {
+          "choices": {
+            "RichTextSection": {
+              "type": "SharedSlice"
+            },
+            "Quote": {
+              "type": "SharedSlice"
+            },
+            "Image": {
+              "type": "SharedSlice"
+            },
+            "Gallery": {
+              "type": "SharedSlice"
+            },
+            "VideoEmbed": {
+              "type": "SharedSlice"
+            },
+            "FileLink": {
+              "type": "SharedSlice"
+            },
+            "FormEmbed": {
+              "type": "SharedSlice"
+            }
+          }
+        }
+      },
+      "references": {
+        "type": "Group",
+        "config": {
+          "label": "References",
+          "fields": {
+            "location": {
+              "type": "Text",
+              "config": {
+                "label": "Location",
+                "placeholder": "Excerpt or note location"
+              }
+            },
+            "reference_text": {
+              "type": "StructuredText",
+              "config": {
+                "label": "Reference text",
+                "multi": "paragraph,strong,em,hyperlink,list-item,o-list-item"
+              }
+            }
+          }
+        }
+      },
+      "works_cited": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Works cited",
+          "multi": "paragraph,strong,em,hyperlink,list-item,o-list-item"
+        }
+      }
+    },
+    "Relationships": {
+      "issue": {
+        "type": "Link",
+        "config": {
+          "label": "Issue",
+          "select": "document"
+        }
+      },
+      "parent_section": {
+        "type": "Link",
+        "config": {
+          "label": "Parent section",
+          "select": "document"
+        }
+      }
+    },
+    "Settings": {
+      "hide_from_sitemap": {
+        "type": "Boolean",
+        "config": {
+          "label": "Hide from sitemap",
+          "default_value": false
+        }
+      },
+      "tile_title": {
+        "type": "Text",
+        "config": {
+          "label": "Tile title",
+          "placeholder": "Card title"
+        }
+      },
+      "tile_summary": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Tile summary",
+          "multi": "paragraph,strong,em,hyperlink"
+        }
+      },
+      "tile_thumbnail": {
+        "type": "Image",
+        "config": {
+          "label": "Tile thumbnail"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+[
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"embed_url": {
+				"__TYPE__": "FieldContent",
+				"value": "classroom",
+				"type": "Text"
+			},
+			"caption": {
+				"__TYPE__": "StructuredTextContent",
+				"value": [
+					{
+						"type": "paragraph",
+						"content": {
+							"text": "Exercitation qui cillum cupidatat. Consequat dolor amet duis."
+						}
+					}
+				]
+			},
+			"credit": {
+				"__TYPE__": "StructuredTextContent",
+				"value": [
+					{
+						"type": "paragraph",
+						"content": {
+							"text": "Veniam est irure sunt anim Lorem qui sunt mollit fugiat eiusmod."
+						}
+					}
+				]
+			},
+			"use_in_hero": {
+				"__TYPE__": "BooleanContent",
+				"value": false
+			}
+		},
+		"items": [
+			{
+				"__TYPE__": "GroupItemContent",
+				"value": []
+			}
+		]
+	}
+]

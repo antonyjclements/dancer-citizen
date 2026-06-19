@@ -1,0 +1,10 @@
+decisions:
+  - path: docs/decisions/2026-06-19-use-react-lambda-bff-for-aws-delivery.md
+    title: Use React and Lambda BFF for AWS Delivery
+    date: 2026-06-19
+    status: active
+    tags:
+      - aws
+      - architecture
+      - prismic
+      - public-site

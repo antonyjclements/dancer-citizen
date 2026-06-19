@@ -1,0 +1,39 @@
+{
+  "id": "FileLink",
+  "type": "SharedSlice",
+  "name": "FileLink",
+  "description": "Downloadable file or media link",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "description": "Downloadable file or media link",
+      "docURL": "https://prismic.io/docs/slices",
+      "version": "initial",
+      "primary": {
+        "title": {
+          "type": "Text",
+          "config": {
+            "label": "Title",
+            "placeholder": "File title"
+          }
+        },
+        "description": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Description",
+            "multi": "paragraph,strong,em,hyperlink"
+          }
+        },
+        "file": {
+          "type": "Link",
+          "config": {
+            "label": "File",
+            "select": "media"
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

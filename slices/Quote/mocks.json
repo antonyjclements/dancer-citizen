@@ -1,0 +1,34 @@
+[
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"quote": {
+				"__TYPE__": "StructuredTextContent",
+				"value": [
+					{
+						"type": "paragraph",
+						"content": {
+							"text": "Anim laboris fugiat veniam veniam nisi exercitation fugiat commodo elit ex amet do. Cillum dolore officia nulla exercitation aliquip labore tempor. Sunt do reprehenderit consectetur velit occaecat minim quis excepteur qui do officia sit dolore."
+						}
+					}
+				]
+			},
+			"attribution": {
+				"__TYPE__": "FieldContent",
+				"value": "lower",
+				"type": "Text"
+			},
+			"centered": {
+				"__TYPE__": "BooleanContent",
+				"value": false
+			}
+		},
+		"items": [
+			{
+				"__TYPE__": "GroupItemContent",
+				"value": []
+			}
+		]
+	}
+]

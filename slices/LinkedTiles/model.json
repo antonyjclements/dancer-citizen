@@ -1,0 +1,53 @@
+{
+  "id": "LinkedTiles",
+  "type": "SharedSlice",
+  "name": "LinkedTiles",
+  "description": "Grid of linked internal documents",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "description": "Grid of linked internal documents",
+      "docURL": "https://prismic.io/docs/slices",
+      "version": "initial",
+      "primary": {
+        "heading": {
+          "type": "Text",
+          "config": {
+            "label": "Heading",
+            "placeholder": "Section heading"
+          }
+        }
+      },
+      "items": {
+        "title": {
+          "type": "Text",
+          "config": {
+            "label": "Title",
+            "placeholder": "Tile title"
+          }
+        },
+        "summary": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Summary",
+            "multi": "paragraph,strong,em,hyperlink"
+          }
+        },
+        "link": {
+          "type": "Link",
+          "config": {
+            "label": "Link",
+            "select": "document"
+          }
+        },
+        "image": {
+          "type": "Image",
+          "config": {
+            "label": "Image"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+standards:
+  - path: docs/standards/aws/build-react-before-cdk-synth.md
+    description: Build React before CDK synth or deploy
+    applies_to:
+      - infra/lib/dancer-citizen-web-stack.ts
+      - apps/react-site/**
+      - README.md
+      - package.json
+    tags:
+      - aws
+      - deployment
+      - react
+  - path: docs/standards/aws/html-shell-metadata-from-cms.md
+    description: Render AWS HTML shell metadata from CMS normalization
+    applies_to:
+      - apps/cms-api/src/html-shell.ts
+      - apps/cms-api/src/content.ts
+      - apps/react-site/index.html
+      - infra/lib/dancer-citizen-web-stack.ts
+    tags:
+      - aws
+      - metadata
+      - seo
+  - path: docs/standards/frontend/prevent-mobile-content-overflow.md
+    description: Prevent CMS content from widening mobile viewports
+    applies_to:
+      - src/foundation/rich-text/**
+      - src/features/**/components/**
+      - apps/react-site/src/components/**
+      - apps/react-site/src/pages/**
+      - apps/react-site/src/styles.css
+    tags:
+      - frontend
+      - mobile
+      - rich-text
+  - path: docs/standards/react/keep-react-pages-on-cms-api-boundary.md
+    description: Keep React pages behind the CMS API boundary
+    applies_to:
+      - apps/react-site/src/api.ts
+      - apps/react-site/src/hooks.ts
+      - apps/react-site/src/pages/**
+      - apps/cms-api/src/content.ts
+    tags:
+      - react
+      - cms-api
+      - prismic
+  - path: docs/standards/react/keep-react-slices-in-parity-with-next.md
+    description: Keep React slice rendering aligned with Next during migration
+    applies_to:
+      - apps/react-site/src/components/Slices.tsx
+      - slices/*/index.tsx
+      - docs/features/prismic-content-model-and-slices/spec.md
+    tags:
+      - react
+      - slices
+      - migration
+  - path: docs/standards/react/make-mobile-navigation-accessible.md
+    description: Make mobile shell navigation accessible
+    applies_to:
+      - src/foundation/layout/SiteHeader.tsx
+      - apps/react-site/src/App.tsx
+      - apps/react-site/src/styles.css
+    tags:
+      - react
+      - navigation
+      - accessibility
+  - path: docs/standards/react/own-spa-navigation-reset.md
+    description: Reset React SPA scroll at the shell boundary
+    applies_to:
+      - apps/react-site/src/App.tsx
+      - apps/react-site/src/pages/**
+    tags:
+      - react
+      - navigation
+      - accessibility
+  - path: docs/standards/react/use-skeletons-for-content-loading.md
+    description: Use skeletons for React content loading
+    applies_to:
+      - apps/react-site/src/components/Loading.tsx
+      - apps/react-site/src/hooks.ts
+      - apps/react-site/src/pages/**
+      - apps/react-site/src/styles.css
+    tags:
+      - react
+      - loading
+      - accessibility
+  - path: docs/standards/workflow/use-fast-reliable-verification.md
+    description: Use fast reliable verification after repeated local tooling failures
+    applies_to:
+      - frontend changes
+      - mobile layout changes
+      - verification workflow
+    tags:
+      - workflow
+      - verification
+      - frontend
+  - path: docs/standards/prismic/centralize-prismic-document-url-rules.md
+    description: Keep Prismic routes and UI document hrefs aligned
+    applies_to:
+      - src/foundation/prismic/prismicRoutes.ts
+      - src/features/**/data/**
+      - src/features/**/components/**
+    tags:
+      - prismic
+      - routing
+      - ui-props
+  - path: docs/standards/prismic/keep-page-queries-in-feature-data-loaders.md
+    description: Keep page route CMS queries inside feature data loaders
+    applies_to:
+      - src/app/**/page.tsx
+      - src/features/**/data/**
+    tags:
+      - prismic
+      - data-access
+  - path: docs/standards/prismic/keep-preview-and-cache-rules-explicit.md
+    description: Keep Prismic preview and cache behavior explicit
+    applies_to:
+      - src/app/api/**
+      - src/foundation/prismic/prismicClient.ts
+      - apps/cms-api/src/**
+      - infra/lib/dancer-citizen-web-stack.ts
+    tags:
+      - prismic
+      - preview
+      - cache
+  - path: docs/standards/prismic/normalize-legacy-content-early.md
+    description: Normalize migrated Prismic legacy content early
+    applies_to:
+      - apps/cms-api/src/content.ts
+      - apps/react-site/src/text.ts
+      - apps/react-site/src/components/Slices.tsx
+      - slices/*/index.tsx
+    tags:
+      - prismic
+      - migration
+      - normalization
+  - path: docs/standards/prismic/normalize-prismic-documents-at-data-boundary.md
+    description: Convert Prismic documents into stable view models before rendering
+    applies_to:
+      - src/features/**/data/**
+      - src/features/**/components/**
+      - src/app/**/page.tsx
+    tags:
+      - prismic
+      - data-access
+      - ui-props
+  - path: docs/standards/prismic/use-shared-prismic-client.md
+    description: Centralize all Prismic access through the shared client
+    applies_to:
+      - src/foundation/prismic/**
+      - src/features/**/data/**
+      - src/app/api/**/route.ts
+      - src/prismicio.ts
+    tags:
+      - prismic
+      - data-access
