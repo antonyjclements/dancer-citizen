@@ -1,0 +1,8 @@
+learnings:
+  - path: docs/learnings/2026-06-19-avoid-repeating-localhost-verification-failures.md
+    title: Avoid Repeating Localhost Verification Failures
+    scope: repo
+    tags:
+      - verification
+      - frontend
+      - workflow

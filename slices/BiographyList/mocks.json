@@ -1,0 +1,78 @@
+[
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"heading": {
+				"__TYPE__": "FieldContent",
+				"value": "new",
+				"type": "Text"
+			}
+		},
+		"items": [
+			{
+				"__TYPE__": "GroupItemContent",
+				"value": [
+					[
+						"name",
+						{
+							"__TYPE__": "FieldContent",
+							"value": "like",
+							"type": "Text"
+						}
+					],
+					[
+						"summary",
+						{
+							"__TYPE__": "StructuredTextContent",
+							"value": [
+								{
+									"type": "paragraph",
+									"content": {
+										"text": "Minim esse labore irure anim. Laborum excepteur voluptate magna adipisicing ea anim consequat cupidatat nulla officia mollit."
+									}
+								}
+							]
+						}
+					],
+					[
+						"image",
+						{
+							"origin": {
+								"id": "main",
+								"url": "https://images.unsplash.com/photo-1593642633279-1796119d5482",
+								"width": 4016,
+								"height": 6016
+							},
+							"url": "https://images.unsplash.com/photo-1593642633279-1796119d5482",
+							"width": 4016,
+							"height": 6016,
+							"edit": {
+								"zoom": 1,
+								"crop": {
+									"x": 0,
+									"y": 0
+								},
+								"background": "transparent"
+							},
+							"alt": "how",
+							"credits": null,
+							"__TYPE__": "ImageContent"
+						}
+					],
+					[
+						"linked_article",
+						{
+							"key": "f2661113-7450-4f81-860b-5e55846617a1",
+							"__TYPE__": "LinkContent",
+							"value": {
+								"__TYPE__": "DocumentLink",
+								"id": "mock_document_id"
+							}
+						}
+					]
+				]
+			}
+		]
+	}
+]

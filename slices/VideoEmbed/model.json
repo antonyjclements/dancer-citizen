@@ -1,0 +1,46 @@
+{
+  "id": "VideoEmbed",
+  "type": "SharedSlice",
+  "name": "VideoEmbed",
+  "description": "Embedded video with metadata",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "description": "Embedded video with metadata",
+      "docURL": "https://prismic.io/docs/slices",
+      "version": "initial",
+      "primary": {
+        "embed_url": {
+          "type": "Text",
+          "config": {
+            "label": "Embed URL",
+            "placeholder": "https://..."
+          }
+        },
+        "caption": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Caption",
+            "multi": "paragraph,strong,em,hyperlink"
+          }
+        },
+        "credit": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Credit",
+            "multi": "paragraph,strong,em,hyperlink"
+          }
+        },
+        "use_in_hero": {
+          "type": "Boolean",
+          "config": {
+            "label": "Use in hero",
+            "default_value": false
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

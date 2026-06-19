@@ -1,0 +1,53 @@
+{
+  "id": "Gallery",
+  "type": "SharedSlice",
+  "name": "Gallery",
+  "description": "Image gallery",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "description": "Image gallery",
+      "docURL": "https://prismic.io/docs/slices",
+      "version": "initial",
+      "primary": {
+        "heading": {
+          "type": "Text",
+          "config": {
+            "label": "Heading",
+            "placeholder": "Gallery heading"
+          }
+        }
+      },
+      "items": {
+        "image": {
+          "type": "Image",
+          "config": {
+            "label": "Image"
+          }
+        },
+        "caption": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Caption",
+            "multi": "paragraph,strong,em,hyperlink"
+          }
+        },
+        "credit": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Credit",
+            "multi": "paragraph,strong,em,hyperlink"
+          }
+        },
+        "anchor": {
+          "type": "Text",
+          "config": {
+            "label": "Anchor",
+            "placeholder": "Optional anchor id"
+          }
+        }
+      }
+    }
+  ]
+}

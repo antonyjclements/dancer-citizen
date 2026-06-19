@@ -1,0 +1,155 @@
+{
+  "id": "content_page",
+  "label": "Content Page",
+  "repeatable": true,
+  "status": true,
+  "json": {
+    "Main": {
+      "uid": {
+        "type": "UID",
+        "config": {
+          "label": "UID",
+          "placeholder": "content-page"
+        }
+      },
+      "title": {
+        "type": "Text",
+        "config": {
+          "label": "Title",
+          "placeholder": "Page title"
+        }
+      },
+      "meta_title": {
+        "type": "Text",
+        "config": {
+          "label": "Meta title",
+          "placeholder": "SEO title"
+        }
+      },
+      "meta_description": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Meta description",
+          "single": "paragraph"
+        }
+      },
+      "hero_title": {
+        "type": "Text",
+        "config": {
+          "label": "Hero title",
+          "placeholder": "Display title"
+        }
+      },
+      "hero_subtitle": {
+        "type": "Text",
+        "config": {
+          "label": "Hero subtitle",
+          "placeholder": "Secondary heading"
+        }
+      },
+      "hero_image": {
+        "type": "Image",
+        "config": {
+          "label": "Hero image"
+        }
+      },
+      "hero_image_credit": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Hero image credit",
+          "single": "paragraph"
+        }
+      },
+      "body": {
+        "type": "Slices",
+        "fieldset": "Body",
+        "config": {
+          "choices": {
+            "RichTextSection": {
+              "type": "SharedSlice"
+            },
+            "LinkedTiles": {
+              "type": "SharedSlice"
+            },
+            "BiographyList": {
+              "type": "SharedSlice"
+            },
+            "ContributorList": {
+              "type": "SharedSlice"
+            },
+            "Quote": {
+              "type": "SharedSlice"
+            },
+            "Image": {
+              "type": "SharedSlice"
+            },
+            "Gallery": {
+              "type": "SharedSlice"
+            },
+            "VideoEmbed": {
+              "type": "SharedSlice"
+            },
+            "FileLink": {
+              "type": "SharedSlice"
+            },
+            "FormEmbed": {
+              "type": "SharedSlice"
+            }
+          }
+        }
+      }
+    },
+    "Relationships": {
+      "issue": {
+        "type": "Link",
+        "config": {
+          "label": "Issue",
+          "select": "document"
+        }
+      },
+      "parent_page": {
+        "type": "Link",
+        "config": {
+          "label": "Parent page",
+          "select": "document"
+        }
+      }
+    },
+    "Settings": {
+      "show_in_navigation": {
+        "type": "Boolean",
+        "config": {
+          "label": "Show in navigation",
+          "default_value": false
+        }
+      },
+      "hide_from_sitemap": {
+        "type": "Boolean",
+        "config": {
+          "label": "Hide from sitemap",
+          "default_value": false
+        }
+      },
+      "tile_title": {
+        "type": "Text",
+        "config": {
+          "label": "Tile title",
+          "placeholder": "Card title"
+        }
+      },
+      "tile_summary": {
+        "type": "StructuredText",
+        "config": {
+          "label": "Tile summary",
+          "multi": "paragraph,strong,em,hyperlink"
+        }
+      },
+      "tile_thumbnail": {
+        "type": "Image",
+        "config": {
+          "label": "Tile thumbnail"
+        }
+      }
+    }
+  }
+}

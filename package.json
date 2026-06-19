@@ -1,0 +1,55 @@
+{
+  "name": "site",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/react-site",
+    "apps/cms-api",
+    "infra"
+  ],
+  "scripts": {
+    "dev": "next dev",
+    "dev:react": "npm run dev -w @dancer-citizen/react-site",
+    "build:react": "npm run build -w @dancer-citizen/react-site",
+    "build:api": "npm run build -w @dancer-citizen/cms-api",
+    "test:api": "npm run test -w @dancer-citizen/cms-api",
+    "cdk:synth": "npm run synth -w @dancer-citizen/infra",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "prismic:login": "node scripts/prismic-login.mjs",
+    "scaffold:slices": "node scripts/scaffold-slices.cjs",
+    "slicemachine": "start-slicemachine -p 9999"
+  },
+  "dependencies": {
+    "@prismicio/client": "^7.21.8",
+    "@prismicio/next": "^2.2.3",
+    "@prismicio/react": "^3.4.1",
+    "@prismicio/simulator": "^0.2.1",
+    "@prismicio/types": "^0.2.9",
+    "next": "16.2.2",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.149",
+    "@slicemachine/adapter-next": "^0.3.95",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.2",
+    "slice-machine-ui": "^2.21.2",
+    "tailwindcss": "^4",
+    "vite": "^7.0.0",
+    "vitest": "^3.2.4",
+    "react-router-dom": "^7.8.2",
+    "aws-cdk": "^2.1018.0",
+    "aws-cdk-lib": "^2.258.0",
+    "constructs": "^10.4.2",
+    "tsx": "^4.20.6",
+    "esbuild": "^0.25.12",
+    "typescript": "^5"
+  }
+}

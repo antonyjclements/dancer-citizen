@@ -1,0 +1,42 @@
+[
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"title": {
+				"__TYPE__": "FieldContent",
+				"value": "than",
+				"type": "Text"
+			},
+			"description": {
+				"__TYPE__": "StructuredTextContent",
+				"value": [
+					{
+						"type": "paragraph",
+						"content": {
+							"text": "Adipisicing eu consectetur nulla excepteur. Aliqua officia mollit dolore."
+						}
+					}
+				]
+			},
+			"file": {
+				"key": "6d871913-595a-4b80-81fb-38585a587111",
+				"__TYPE__": "LinkContent",
+				"value": {
+					"__TYPE__": "FileLink",
+					"id": "mock_Media_link",
+					"kind": "file",
+					"name": "mock_name",
+					"url": "https://source.unsplash.com/daily",
+					"size": "0"
+				}
+			}
+		},
+		"items": [
+			{
+				"__TYPE__": "GroupItemContent",
+				"value": []
+			}
+		]
+	}
+]

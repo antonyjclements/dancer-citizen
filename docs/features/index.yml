@@ -1,0 +1,42 @@
+features:
+  - key: aws-react-lambda-delivery
+    title: AWS React Lambda Delivery
+    spec: docs/features/aws-react-lambda-delivery/spec.md
+    status: active
+    tags:
+      - aws
+      - deployment
+      - prismic
+      - public-site
+  - key: prismic-content-model-and-slices
+    title: Prismic Content Model and Slices
+    spec: docs/features/prismic-content-model-and-slices/spec.md
+    status: active
+    tags:
+      - prismic
+      - slices
+      - content-model
+  - key: prismic-preview-and-cache-revalidation
+    title: Prismic Preview and Cache Revalidation
+    spec: docs/features/prismic-preview-and-cache-revalidation/spec.md
+    status: active
+    tags:
+      - prismic
+      - preview
+      - cache
+  - key: public-journal-experience
+    title: Public Journal Experience
+    spec: docs/features/public-journal-experience/spec.md
+    status: active
+    tags:
+      - journal
+      - prismic
+      - public-site
+  - key: site-shell-and-navigation
+    title: Site Shell and Navigation
+    spec: docs/features/site-shell-and-navigation/spec.md
+    status: active
+    tags:
+      - layout
+      - navigation
+      - public-site

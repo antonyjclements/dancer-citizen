@@ -1,0 +1,39 @@
+{
+  "id": "Quote",
+  "type": "SharedSlice",
+  "name": "Quote",
+  "description": "Pull quote with optional attribution",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "description": "Pull quote with optional attribution",
+      "docURL": "https://prismic.io/docs/slices",
+      "version": "initial",
+      "primary": {
+        "quote": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Quote",
+            "multi": "paragraph,strong,em,hyperlink"
+          }
+        },
+        "attribution": {
+          "type": "Text",
+          "config": {
+            "label": "Attribution",
+            "placeholder": "Quote source"
+          }
+        },
+        "centered": {
+          "type": "Boolean",
+          "config": {
+            "label": "Centered",
+            "default_value": false
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

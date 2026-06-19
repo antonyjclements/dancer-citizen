@@ -1,0 +1,81 @@
+[
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"heading": {
+				"__TYPE__": "FieldContent",
+				"value": "refused",
+				"type": "Text"
+			}
+		},
+		"items": [
+			{
+				"__TYPE__": "GroupItemContent",
+				"value": [
+					[
+						"image",
+						{
+							"origin": {
+								"id": "main",
+								"url": "https://images.unsplash.com/photo-1600804931749-2da4ce26c869",
+								"width": 3199,
+								"height": 3199
+							},
+							"url": "https://images.unsplash.com/photo-1600804931749-2da4ce26c869",
+							"width": 3199,
+							"height": 3199,
+							"edit": {
+								"zoom": 1,
+								"crop": {
+									"x": 0,
+									"y": 0
+								},
+								"background": "transparent"
+							},
+							"alt": "cook",
+							"credits": null,
+							"__TYPE__": "ImageContent"
+						}
+					],
+					[
+						"caption",
+						{
+							"__TYPE__": "StructuredTextContent",
+							"value": [
+								{
+									"type": "paragraph",
+									"content": {
+										"text": "Veniam minim esse incididunt adipisicing excepteur nostrud enim laboris ullamco amet. Lorem ullamco nulla sunt dolor do voluptate tempor est voluptate excepteur. Enim proident officia laboris."
+									}
+								}
+							]
+						}
+					],
+					[
+						"credit",
+						{
+							"__TYPE__": "StructuredTextContent",
+							"value": [
+								{
+									"type": "paragraph",
+									"content": {
+										"text": "Ullamco aliquip adipisicing sint sint reprehenderit labore anim voluptate occaecat ullamco ut ea."
+									}
+								}
+							]
+						}
+					],
+					[
+						"anchor",
+						{
+							"__TYPE__": "FieldContent",
+							"value": "would",
+							"type": "Text"
+						}
+					]
+				]
+			}
+		]
+	}
+]
