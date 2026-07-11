@@ -2,7 +2,7 @@
 title: AWS React Lambda Delivery
 status: active
 created: 2026-06-19
-updated: 2026-06-19
+updated: 2026-07-11
 tags:
   - aws
   - deployment
@@ -10,6 +10,7 @@ tags:
   - public-site
 related_decisions:
   - docs/decisions/2026-06-19-use-react-lambda-bff-for-aws-delivery.md
+  - docs/decisions/2026-07-11-remove-legacy-next-runtime.md
 related_standards:
   - docs/standards/prismic/centralize-prismic-document-url-rules.md
   - docs/standards/prismic/normalize-prismic-documents-at-data-boundary.md
@@ -20,19 +21,18 @@ related_standards:
 
 ## Intent
 
-The site can be delivered as a low-cost AWS-native public experience: a Vite/React frontend hosted on S3 and CloudFront, backed by Lambda APIs that fetch and normalize Prismic content at request time.
+The site is delivered as a low-cost AWS-native public experience: a Vite/React frontend hosted on S3 and CloudFront, backed by Lambda APIs that fetch and normalize Prismic content at request time.
 
 ## Users
 
 - Readers using the public CloudFront-hosted site.
 - Readers and social crawlers opening article, issue, and content URLs directly.
 - Editors previewing draft Prismic content before publication.
-- Developers deploying and validating the AWS migration stack.
+- Developers deploying and validating the AWS delivery stack.
 
 ## Current Behavior
 
-- The existing Next.js site remains in place as the source of truth during migration.
-- `apps/react-site` contains the sibling Vite/React app and preserves public routes for home, issues, articles, and content pages.
+- `apps/react-site` contains the Vite/React public app and preserves public routes for home, issues, articles, and content pages.
 - `apps/react-site` defaults to `/cms` for API requests and can use `VITE_CMS_API_BASE` for a deployed or proxied API.
 - `apps/cms-api` contains Lambda handlers for normalized JSON CMS responses, route-specific HTML shells, preview cookies, and metadata lookup.
 - `apps/cms-api` owns the AWS-delivered Prismic data boundary: issue ordering, linked table-of-contents order, article previous/next navigation, page-specific normalizations, media alt fallback data, and metadata extraction.
@@ -41,6 +41,7 @@ The site can be delivered as a low-cost AWS-native public experience: a Vite/Rea
 - The HTML-shell Lambda injects route-specific title, description, canonical, Open Graph, and Twitter tags before returning the React app shell.
 - CDK embeds the current built Vite `index.html` into the HTML-shell Lambda at synth/deploy time so document-route HTML points at the current hashed static assets.
 - CloudFront serves static asset requests from S3, routes `/cms/*` to the CMS API Lambda, and routes public document URLs for articles, issues, and configured top-level content pages to the HTML-shell Lambda.
+- CloudFront routes legacy issue paths shaped like `/issue-13/` and `/issue-13/akari-komura/` to the HTML-shell Lambda, which returns permanent redirects to `/issues/issue-13` and `/articles/issue-13--akari-komura`.
 - The S3 origin is private and readable by CloudFront through origin access control.
 - Prismic preview stores the preview token in an HTTP-only cookie and sends preview responses with `Cache-Control: no-store`.
 - The root package scripts include `dev:react`, `build:react`, `build:api`, `test:api`, and `cdk:synth`.
@@ -78,22 +79,21 @@ The site can be delivered as a low-cost AWS-native public experience: a Vite/Rea
 
 ## Acceptance Criteria
 
-- React app builds independently from the Next app.
+- React app builds independently with Vite.
 - CMS API typechecks and has unit coverage for issue ordering, linked table-of-contents order, page normalization, and image alt fallback behavior.
 - CDK synth provisions S3, CloudFront, API Gateway HTTP API, CMS Lambda, HTML-shell Lambda, and bucket deployment.
 - Article and issue document URLs route through the HTML-shell Lambda so social metadata is not generic SPA metadata.
+- Legacy issue and issue-article URLs return permanent redirects to the current React route shape before metadata lookup or client rendering.
 - Static asset routes are served from S3/CloudFront and `/cms/*` routes are served by the API Lambda.
 - CMS API preview responses and HTML-shell preview responses are not cached when a preview cookie is present.
-- The existing Next app continues to build while the migration remains a sibling implementation.
 - Generated React `dist` output and CDK `cdk.out` output are ignored by repo lint/source control.
 
 ## Boundaries and Non-Goals
 
-- The migration app is a sibling implementation; it does not remove or replace the current Next runtime yet.
-- The first target is behavioral parity, not redesign.
+- The legacy Next runtime has been removed; React/CMS/infra are the maintained delivery path.
+- The first target after cutover remains behavioral continuity, not redesign.
 - Custom domain and certificate wiring are not yet parameterized in CDK.
 - Local React development needs a reachable CMS API base URL or proxy.
-- The React slice renderer is an initial parity scaffold and does not yet guarantee pixel-level parity with every Next slice component.
 - The CDK stack does not yet configure Prismic webhooks, Route 53 aliases, ACM certificates, or production/staging context presets.
 - The stack does not deploy automatically from CI.
 
@@ -101,8 +101,8 @@ The site can be delivered as a low-cost AWS-native public experience: a Vite/Rea
 
 - Should the CDK stack accept hosted zone, certificate, and alternate domain names through context values?
 - Should the preview token be exchanged for a Prismic ref instead of stored directly when Prismic preview behavior is validated end to end?
-- Should shared rendering code be extracted once the React migration reaches parity?
-- Which deployed staging URL should Prismic use for draft preview while the Next site remains the public production site?
+- Should shared rendering code be extracted between the CMS normalization layer and React renderer as the app grows?
+- Which deployed staging URL should Prismic use for draft preview?
 
 ## Decision Links
 

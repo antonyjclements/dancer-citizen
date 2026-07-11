@@ -2,7 +2,7 @@
 title: Prismic Content Model and Slices
 status: active
 created: 2026-05-25
-updated: 2026-06-19
+updated: 2026-07-11
 tags:
   - prismic
   - slices
@@ -28,15 +28,15 @@ The Prismic content model gives editors repeatable issue, article, and content p
 
 ## Current Behavior
 
-- The Prismic repository is `dancercitizen`, configured through Slice Machine.
+- The Prismic repository is `dancercitizen`; custom type and slice models are kept in versioned JSON under `customtypes/` and `slices/*/model.json`.
 - Repeatable custom types exist for `issue_page`, `article_page`, and `content_page`.
 - All three document types include UID, title, hero fields, tile fields, and a body made from shared slices.
 - Issue pages include `issue_number`, `publication_date`, hero image/credit, tile metadata, and a body that can use rich text, linked tiles, quotes, images, galleries, videos, file links, and form embeds.
 - Article pages include SEO fields, hero fields, body slices, references, works cited, relationship links, and tile metadata.
 - Content pages include SEO fields, hero fields, body slices, relationship links, navigation/sitemap settings, and tile metadata.
-- Shared slices are registered through generated Slice Machine component maps and rendered through `SliceZone`.
-- The AWS React migration includes a separate client-side slice renderer that consumes the same Prismic body payloads from the CMS API while parity work continues.
-- Rich text rendering is centralized through `RichText` and `articleRichTextComponents`, including paragraph, heading, list, hyperlink, article-reference, and donation-link rendering rules.
+- Shared slices are rendered by the React slice renderer in `apps/react-site/src/components/Slices.tsx`.
+- The CMS API returns Prismic body payloads to the React app without requiring a site rebuild after CMS changes.
+- Rich text rendering is centralized in the React rich-text component, including paragraph, heading, list, hyperlink, article-reference, and donation-link rendering rules.
 - Article rich text and quotes can receive article reference context; when a reference location matches body text, the renderer injects linked superscript markers that point to the article references section.
 - Images and galleries render Prismic images when present, fill missing alt text from nearby caption/credit/title context, and show pending-import placeholders when missing.
 - Video embeds detect YouTube URLs, render a thumbnail with a play button, and swap to an inline `youtube-nocookie.com` iframe when played.
@@ -52,28 +52,27 @@ The Prismic content model gives editors repeatable issue, article, and content p
 ### Render Body Slices
 
 1. A Prismic page document includes a `body` slice zone.
-2. The Next route renders `SliceZone` with the generated `components` map.
-3. Each shared slice renders its own fields and uses Prismic helpers for images and links.
+2. The CMS API normalizes document-level data and returns the body payload.
+3. The React slice renderer renders each shared slice and applies media/link fallbacks.
 4. Rich text fields delegate to the shared rich-text renderer.
 
 ### Maintain Slice Models
 
 1. Slice models live under `slices/*/model.json`.
-2. Slice components live beside their models at `slices/*/index.tsx`.
-3. `scripts/scaffold-slices.cjs` can upsert and push the current slice model set through Slice Machine.
+2. React rendering behavior lives in `apps/react-site/src/components/Slices.tsx`.
+3. CMS/API normalization behavior lives in `apps/cms-api/src/content.ts`.
 
 ## Acceptance Criteria
 
 - `issue_page`, `article_page`, and `content_page` custom types remain repeatable Prismic documents.
-- Body slices render through the generated `slices/index.ts` component registry.
-- The AWS React migration can render the same Prismic body payloads from `/cms/*` responses without requiring a site rebuild after CMS changes.
+- Body slices render through the React slice renderer.
+- The React app can render Prismic body payloads from `/cms/*` responses without requiring a site rebuild after CMS changes.
 - Shared rich text uses the centralized rich-text serializer for paragraphs, headings, lists, and links.
 - External rich-text links opening in a new tab include `rel="noreferrer"`.
 - Article reference markers render as linked superscripts when matching reference locations are provided.
 - PayPal donation links render as readable button-style links with `target="_blank"`.
 - YouTube video slices render inline playable media with thumbnail alt text.
 - Missing optional media renders a clear pending-import fallback rather than crashing.
-- Slice components preserve `data-slice-type` and `data-slice-variation` attributes.
 - New public Prismic document types update both Prismic routes and journal href rules.
 
 ## Boundaries and Non-Goals
@@ -82,8 +81,8 @@ The Prismic content model gives editors repeatable issue, article, and content p
 - The `FormEmbed` slice does not render provider embed HTML yet.
 - Non-YouTube `VideoEmbed` URLs render as outbound links rather than inline embeds.
 - Content relationship fields exist in custom types, but most relationship-driven navigation is not implemented.
-- Generated `slices/index.ts` is not hand-edited.
-- The AWS React slice renderer is not yet the canonical slice implementation; the Next slice components remain the source of truth until parity is complete.
+- Slice model JSON is preserved even though the legacy Slice Machine component runtime has been removed.
+- The React slice renderer is the canonical public slice implementation.
 
 ## Open Questions / TODOs
 

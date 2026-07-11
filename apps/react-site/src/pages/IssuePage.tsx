@@ -12,16 +12,18 @@ export function IssuePage() {
   const loadIssue = useCallback(() => getJson<IssueData>(`/issues/${uid}`), [uid]);
   const state = useAsyncData(`issue:${uid}`, loadIssue);
   if (state.status === "loading") return <Loading />;
-  if (state.status === "error") return state.error.message === "not-found" ? <NotFoundPage /> : <main className="page"><h1>Issue unavailable</h1></main>;
+  if (state.status === "error") return <NotFoundPage />;
 
   return (
     <main>
       <section className="article-hero">
-        <p>{state.data.summary.publicationDate}</p>
+        <div className="hero-kicker">{state.data.summary.publicationDate}</div>
         <h1>{stripLegacyHtml(state.data.summary.title)}</h1>
-        {state.data.summary.subtitle ? <p>{stripLegacyHtml(state.data.summary.subtitle)}</p> : null}
       </section>
-      <section className="body"><Slices slices={state.data.issue.data.body} /></section>
+      <section className="body">
+        {state.data.summary.subtitle ? <p className="body-intro">{stripLegacyHtml(state.data.summary.subtitle)}</p> : null}
+        <Slices slices={state.data.issue.data.body} />
+      </section>
       <section className="toc">
         <h2>Table of Contents</h2>
         {state.data.tableOfContents.map((entry) => <Link key={entry.id} to={entry.href}>{stripLegacyHtml(entry.title)}</Link>)}

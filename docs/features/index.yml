@@ -17,7 +17,7 @@ features:
       - slices
       - content-model
   - key: prismic-preview-and-cache-revalidation
-    title: Prismic Preview and Cache Revalidation
+    title: Prismic Preview and Cache Behavior
     spec: docs/features/prismic-preview-and-cache-revalidation/spec.md
     status: active
     tags:
@@ -39,4 +39,13 @@ features:
     tags:
       - layout
       - navigation
+      - public-site
+  - key: submissions-management
+    title: Submissions Management
+    spec: docs/features/submissions-management/spec.md
+    status: active
+    tags:
+      - submissions
+      - aws
+      - admin
       - public-site

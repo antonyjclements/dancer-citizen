@@ -1,6 +1,7 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from "aws-lambda";
 import { getMetadataForPath } from "./content";
 import { htmlResponse } from "./http";
+import { getLegacyRedirectPath } from "./legacy-redirects";
 import { getPreviewRefFromCookies } from "./preview";
 
 const defaultIndexHtml = `<!doctype html>
@@ -49,6 +50,18 @@ function injectHead(indexHtml: string, tags: string): string {
 
 export async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> {
   const path = event.rawPath || "/";
+  const redirectPath = getLegacyRedirectPath(path);
+  if (redirectPath) {
+    const queryString = event.rawQueryString ? `?${event.rawQueryString}` : "";
+    return {
+      statusCode: 301,
+      headers: {
+        location: `${redirectPath}${queryString}`,
+        "cache-control": "public, max-age=3600",
+      },
+    };
+  }
+
   const ref = getPreviewRefFromCookies(event);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || "https://dancercitizen.org";
   const indexHtml = process.env.INDEX_HTML || defaultIndexHtml;

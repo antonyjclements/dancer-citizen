@@ -17,7 +17,7 @@ export function HomePage() {
   return (
     <main>
       <section className="hero">
-        <p>Open-access dance scholarship</p>
+        <div className="hero-kicker">Open-access dance scholarship</div>
         <h1>The Dancer-Citizen</h1>
       </section>
       {latest ? (

@@ -6,3 +6,10 @@ learnings:
       - verification
       - frontend
       - workflow
+  - path: docs/learnings/2026-07-10-preserve-user-authored-review-fixes.md
+    title: Preserve User-Authored Review Fixes
+    scope: repo
+    tags:
+      - review
+      - workflow
+      - specs

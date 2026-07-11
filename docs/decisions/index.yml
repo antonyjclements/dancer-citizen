@@ -1,4 +1,13 @@
 decisions:
+  - path: docs/decisions/2026-07-11-remove-legacy-next-runtime.md
+    title: Remove Legacy Next Runtime
+    date: 2026-07-11
+    status: active
+    tags:
+      - aws
+      - architecture
+      - react
+      - public-site
   - path: docs/decisions/2026-06-19-use-react-lambda-bff-for-aws-delivery.md
     title: Use React and Lambda BFF for AWS Delivery
     date: 2026-06-19
@@ -8,3 +17,20 @@ decisions:
       - architecture
       - prismic
       - public-site
+  - path: docs/decisions/2026-07-10-use-simple-admin-auth-for-submissions.md
+    title: Use Simple Admin Auth for Submissions
+    date: 2026-07-10
+    status: active
+    tags:
+      - submissions
+      - admin
+      - security
+      - aws
+  - path: docs/decisions/2026-07-10-do-not-inject-editor-role-labels.md
+    title: Do Not Inject Editor Role Labels
+    date: 2026-07-10
+    status: active
+    tags:
+      - public-site
+      - editors
+      - prismic

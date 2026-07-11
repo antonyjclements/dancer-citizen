@@ -4,6 +4,8 @@ import { getArticle, getHome, getIssue, getMetadataForPath, getPage } from "./co
 import { jsonResponse, notFoundResponse } from "./http";
 import { clearPreviewCookie, createPreviewCookie, getPreviewRefFromCookies } from "./preview";
 import { createPrismicClient } from "./prismic";
+import { createSubmission } from "./submissions";
+import { getSubmissionDetail, getSubmissionDownload, listSubmissions, loginAdmin, logoutAdmin } from "./admin";
 
 function pathParts(path: string): string[] {
   return path.replace(/^\/+|\/+$/g, "").split("/").filter(Boolean);
@@ -60,8 +62,33 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
   const resource = parts[cmsIndex];
   const uid = parts[cmsIndex + 1];
   const context = previewContext(event);
+  const method = event.requestContext.http?.method || "GET";
 
   try {
+    if (resource === "admin" && uid === "login" && method === "POST") {
+      return await loginAdmin(event);
+    }
+
+    if (resource === "admin" && uid === "logout" && method === "POST") {
+      return logoutAdmin();
+    }
+
+    if (resource === "admin" && uid === "submissions" && method === "GET" && !parts[cmsIndex + 2]) {
+      return await listSubmissions(event);
+    }
+
+    if (resource === "admin" && uid === "submissions" && method === "GET" && parts[cmsIndex + 2] && parts[cmsIndex + 3] === "file") {
+      return await getSubmissionDownload(event, parts[cmsIndex + 2]);
+    }
+
+    if (resource === "admin" && uid === "submissions" && method === "GET" && parts[cmsIndex + 2]) {
+      return await getSubmissionDetail(event, parts[cmsIndex + 2]);
+    }
+
+    if (resource === "submissions" && method === "POST") {
+      return await createSubmission(event);
+    }
+
     if (resource === "home") {
       return jsonResponse(200, await getHome(context), noStoreHeaders(event));
     }

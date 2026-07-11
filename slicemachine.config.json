@@ -1,5 +1,0 @@
-{
-  "repositoryName": "dancercitizen",
-  "adapter": "@slicemachine/adapter-next",
-  "libraries": ["./slices"]
-}

@@ -44,6 +44,14 @@ function issueLabel(issue: unknown) {
   return value ? `(Issue ${value})` : "";
 }
 
+function documentHref(link: any): string | null {
+  if (link?.link_type !== "Document" || link.isBroken || !link.uid) return null;
+  if (link.type === "issue_page") return `/issues/${link.uid}`;
+  if (link.type === "article_page") return `/articles/${link.uid}`;
+  if (link.type === "content_page") return `/${link.uid}`;
+  return null;
+}
+
 function linkLegacyReadMoreText(field: RichTextField | null | undefined): RichTextField | null | undefined {
   if (!field) return field;
 
@@ -122,6 +130,32 @@ export function Slices({ slices, references }: { slices: any[] | undefined; refe
                       {label ? <span className="issue-label"> {label}</span> : null}
                     </h3>
                     <RichText field={linkLegacyReadMoreText(item.body_text || item.bio) as RichTextField} />
+                  </article>
+                );
+              })}
+            </section>
+          );
+        }
+        if (slice.slice_type === "BiographyList") {
+          return (
+            <section key={key} className="biography-list">
+              {slice.primary?.heading ? <h2>{stripLegacyHtml(slice.primary.heading)}</h2> : null}
+              {(slice.items ?? []).map((item: any, itemIndex: number) => {
+                const href = documentHref(item.linked_article);
+                const name = stripLegacyHtml(item.name || "Contributor");
+
+                return (
+                  <article key={itemIndex} className="biography-card">
+                    {isFilled.image(item.image) ? <img src={item.image.url} alt={imageAlt(item.image, name)} /> : null}
+                    <div className="biography-card-body">
+                      <h3>
+                        {name}
+                        {item.inMemoriam ? <span className="in-memoriam"> In Memoriam</span> : null}
+                      </h3>
+                      {item.role ? <p className="biography-role">{stripLegacyHtml(item.role)}</p> : null}
+                      <RichText field={item.summary as RichTextField} />
+                      {href ? <a className="text-link" href={href}>Read contribution</a> : null}
+                    </div>
                   </article>
                 );
               })}

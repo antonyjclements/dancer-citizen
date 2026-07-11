@@ -24,8 +24,6 @@ standards:
   - path: docs/standards/frontend/prevent-mobile-content-overflow.md
     description: Prevent CMS content from widening mobile viewports
     applies_to:
-      - src/foundation/rich-text/**
-      - src/features/**/components/**
       - apps/react-site/src/components/**
       - apps/react-site/src/pages/**
       - apps/react-site/src/styles.css
@@ -44,20 +42,9 @@ standards:
       - react
       - cms-api
       - prismic
-  - path: docs/standards/react/keep-react-slices-in-parity-with-next.md
-    description: Keep React slice rendering aligned with Next during migration
-    applies_to:
-      - apps/react-site/src/components/Slices.tsx
-      - slices/*/index.tsx
-      - docs/features/prismic-content-model-and-slices/spec.md
-    tags:
-      - react
-      - slices
-      - migration
   - path: docs/standards/react/make-mobile-navigation-accessible.md
     description: Make mobile shell navigation accessible
     applies_to:
-      - src/foundation/layout/SiteHeader.tsx
       - apps/react-site/src/App.tsx
       - apps/react-site/src/styles.css
     tags:
@@ -97,9 +84,9 @@ standards:
   - path: docs/standards/prismic/centralize-prismic-document-url-rules.md
     description: Keep Prismic routes and UI document hrefs aligned
     applies_to:
-      - src/foundation/prismic/prismicRoutes.ts
-      - src/features/**/data/**
-      - src/features/**/components/**
+      - apps/cms-api/src/content.ts
+      - apps/react-site/src/**
+      - infra/lib/dancer-citizen-web-stack.ts
     tags:
       - prismic
       - routing
@@ -107,16 +94,15 @@ standards:
   - path: docs/standards/prismic/keep-page-queries-in-feature-data-loaders.md
     description: Keep page route CMS queries inside feature data loaders
     applies_to:
-      - src/app/**/page.tsx
-      - src/features/**/data/**
+      - apps/cms-api/src/content.ts
+      - apps/cms-api/src/handler.ts
+      - apps/react-site/src/pages/**
     tags:
       - prismic
       - data-access
   - path: docs/standards/prismic/keep-preview-and-cache-rules-explicit.md
     description: Keep Prismic preview and cache behavior explicit
     applies_to:
-      - src/app/api/**
-      - src/foundation/prismic/prismicClient.ts
       - apps/cms-api/src/**
       - infra/lib/dancer-citizen-web-stack.ts
     tags:
@@ -129,7 +115,6 @@ standards:
       - apps/cms-api/src/content.ts
       - apps/react-site/src/text.ts
       - apps/react-site/src/components/Slices.tsx
-      - slices/*/index.tsx
     tags:
       - prismic
       - migration
@@ -137,9 +122,9 @@ standards:
   - path: docs/standards/prismic/normalize-prismic-documents-at-data-boundary.md
     description: Convert Prismic documents into stable view models before rendering
     applies_to:
-      - src/features/**/data/**
-      - src/features/**/components/**
-      - src/app/**/page.tsx
+      - apps/cms-api/src/content.ts
+      - apps/react-site/src/api.ts
+      - apps/react-site/src/pages/**
     tags:
       - prismic
       - data-access
@@ -147,10 +132,9 @@ standards:
   - path: docs/standards/prismic/use-shared-prismic-client.md
     description: Centralize all Prismic access through the shared client
     applies_to:
-      - src/foundation/prismic/**
-      - src/features/**/data/**
-      - src/app/api/**/route.ts
-      - src/prismicio.ts
+      - apps/cms-api/src/prismic.ts
+      - apps/cms-api/src/content.ts
+      - apps/cms-api/src/handler.ts
     tags:
       - prismic
       - data-access

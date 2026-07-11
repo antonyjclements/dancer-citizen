@@ -158,12 +158,6 @@ async function getIssueChildren(client: ReturnType<typeof createPrismicClient>, 
   }) as unknown as AnyDocument[];
 }
 
-function linkedSubmissionsFormBody(): RichTextField {
-  const text = "Fill out my online form.";
-  const start = text.indexOf("online form");
-  return [{ type: "paragraph", text, spans: [{ type: "hyperlink", start, end: start + "online form".length, data: { link_type: "Web", url: "https://thedancercitizen.wufoo.com/forms/prrnm6x0iu6wyv" } }] }] as RichTextField;
-}
-
 function linkedSupportDonationBody(): RichTextField {
   return [{ type: "paragraph", text: "Donate", spans: [{ type: "hyperlink", start: 0, end: 6, data: { link_type: "Web", target: "_blank", url: "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UUTLCCFNSRGWC" } }] }] as RichTextField;
 }
@@ -173,14 +167,105 @@ function richTextText(slice: any): string {
   return (slice.primary?.body ?? []).map((node: any) => node.text ?? "").join("\n");
 }
 
+function linkPlainUrlNodes(field: RichTextField | undefined): RichTextField | undefined {
+  return field?.map((node: any) => {
+    if (typeof node.text !== "string" || node.spans?.length) return node;
+
+    const match = node.text.match(/^(.+?)\s*\((https?:\/\/[^)]+)\)\s*$/);
+    if (!match) return node;
+
+    const label = match[1].trim();
+    return {
+      ...node,
+      text: label,
+      spans: [{
+        type: "hyperlink",
+        start: 0,
+        end: label.length,
+        data: { link_type: "Web", url: match[2] },
+      }],
+    };
+  }) as RichTextField | undefined;
+}
+
+function linkPlainUrlsInBody(body: any[]) {
+  return body.map((slice: any) => {
+    if (slice.slice_type !== "RichTextSection") return slice;
+    return {
+      ...slice,
+      primary: {
+        ...slice.primary,
+        body: linkPlainUrlNodes(slice.primary?.body) ?? slice.primary?.body,
+      },
+    };
+  });
+}
+
+function nameForBiographyItem(item: any) {
+  return cleanText(item.name || item.title || item.contributor_name).toLowerCase();
+}
+
+function biographyItemByNamePrefix(items: any[], namePrefix: string) {
+  return items.find((item) => nameForBiographyItem(item).startsWith(namePrefix));
+}
+
+function biographyList(id: string, heading: string, items: any[]) {
+  return {
+    id,
+    slice_type: "BiographyList",
+    primary: { heading },
+    items,
+  };
+}
+
+function normalizeEditorsStaffPage(page: AnyDocument): AnyDocument {
+  const body = page.data.body ?? [];
+  const biographyItems = body.flatMap((slice: any) => slice.slice_type === "BiographyList" ? slice.items ?? [] : []);
+  if (!biographyItems.length) return page;
+
+  const jane = biographyItemByNamePrefix(biographyItems, "jane alexandre");
+  const julie = biographyItemByNamePrefix(biographyItems, "julie b. johnson");
+  const current = [
+    jane ? { ...jane, inMemoriam: true } : null,
+    julie ? { ...julie } : null,
+    biographyItemByNamePrefix(biographyItems, "erica moshman"),
+    biographyItemByNamePrefix(biographyItems, "emily metzner"),
+  ].filter(Boolean);
+  const past = ["takiyah nur amin", "saroya corbett", "laura jones", "jsk", "christiana mcleod horn"]
+    .flatMap((name) => {
+      const item = biographyItemByNamePrefix(biographyItems, name);
+      return item ? [item] : [];
+    });
+  const moving = ["kimberly binns", "carly knudson"]
+    .flatMap((name) => {
+      const item = biographyItemByNamePrefix(biographyItems, name);
+      return item ? [item] : [];
+    });
+  const groupedNames = new Set([...current, ...past, ...moving].map(nameForBiographyItem));
+  const otherItems = biographyItems.filter((item: any) => !groupedNames.has(nameForBiographyItem(item)));
+  const groupedSlices = [
+    current.length ? biographyList("editors-current", "Editors", current) : null,
+    past.length ? biographyList("editors-past", "Past Editors", past) : null,
+    moving.length ? biographyList("editors-moving-map", "Moving the Map", moving) : null,
+    otherItems.length ? biographyList("editors-other", "Additional Editors & Staff", otherItems) : null,
+  ].filter(Boolean);
+  const nonBiographyBody = body.filter((slice: any) => slice.slice_type !== "BiographyList");
+
+  return {
+    ...page,
+    data: {
+      ...page.data,
+      body: [...groupedSlices, ...nonBiographyBody],
+    },
+  };
+}
+
 export function normalizeContentPage(page: AnyDocument): AnyDocument {
   if (page.uid === "submissions") {
     const body = page.data.body ?? [];
     const currentCall = body.find((slice: any) => richTextText(slice).includes("We are now accepting submissions for Issue 20"));
-    const formLink = body.find((slice: any) => richTextText(slice).includes("Fill out my online form"));
     const licensing = body.find((slice: any) => richTextText(slice).includes("The Dancer-Citizen supports the Creative Commons option"));
-    const normalized = [currentCall, formLink, licensing].filter(Boolean).map((slice: any) => {
-      if (slice === formLink) return { ...slice, primary: { ...slice.primary, body: linkedSubmissionsFormBody() } };
+    const normalized = [currentCall, licensing].filter(Boolean).map((slice: any) => {
       if (slice === licensing) return { ...slice, primary: { ...slice.primary, body: (slice.primary.body ?? []).filter((node: any) => !node.text?.startsWith("This work is licensed under CC BY-NC-ND 4.0")) } };
       return slice;
     });
@@ -206,11 +291,15 @@ export function normalizeContentPage(page: AnyDocument): AnyDocument {
     };
   }
 
-  return page;
+  if (page.uid === "editors-staff") {
+    return normalizeEditorsStaffPage(page);
+  }
+
+  return { ...page, data: { ...page.data, body: linkPlainUrlsInBody(page.data.body ?? []) } };
 }
 
 function articleImage(article: AnyDocument): ImageView | null {
-  const title = documentTitle(article);
+  const title = cleanText(article.data.meta_title) || documentTitle(article);
   const bodyImage = (article.data.body ?? []).find((slice: any) => slice.slice_type === "Image" && prismic.isFilled.image(slice.primary?.image))?.primary?.image;
   return imageView(article.data.hero_image, title) || imageView(article.data.tile_thumbnail, title) || imageView(bodyImage, title);
 }
@@ -265,6 +354,39 @@ export async function getMetadataForPath(path: string, context: PreviewContext =
   const normalizedPath = path.split("?")[0].replace(/\/$/, "") || "/";
   if (normalizedPath === "/") {
     return { title: "The Dancer-Citizen", description: "An open-access, peer-reviewed dance journal.", canonicalPath: "/", type: "website", image: null };
+  }
+  const staticMetadata: Record<string, MetadataView> = {
+    "/admin": {
+      title: "Admin",
+      description: "Administrative access for The Dancer-Citizen.",
+      canonicalPath: "/admin",
+      type: "website",
+      image: null,
+    },
+    "/admin/submissions": {
+      title: "Submission Admin",
+      description: "Administrative submission review for The Dancer-Citizen.",
+      canonicalPath: "/admin/submissions",
+      type: "website",
+      image: null,
+    },
+    "/in-the-moment": {
+      title: "In the Moment",
+      description: "Pending editorial content from The Dancer-Citizen.",
+      canonicalPath: "/in-the-moment",
+      type: "website",
+      image: null,
+    },
+    "/submissions/thank-you": {
+      title: "Thank You for Your Submission",
+      description: "Thank you for submitting work to The Dancer-Citizen.",
+      canonicalPath: "/submissions/thank-you",
+      type: "website",
+      image: null,
+    },
+  };
+  if (staticMetadata[normalizedPath]) {
+    return staticMetadata[normalizedPath];
   }
   const articleMatch = normalizedPath.match(/^\/articles\/([^/]+)$/);
   if (articleMatch) {
