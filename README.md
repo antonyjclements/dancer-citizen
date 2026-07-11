@@ -1,11 +1,10 @@
 # Dancer Citizen Site
 
-This repository contains the current Next.js implementation of The Dancer-Citizen site and a sibling AWS-native migration path.
+This repository contains the React/CMS API implementation of The Dancer-Citizen site and the AWS infrastructure used to deliver it.
 
 ## Apps
 
-- `src/` is the existing Next.js public site.
-- `apps/react-site` is a Vite/React single-page app intended for S3 + CloudFront hosting.
+- `apps/react-site` is the Vite/React public site hosted from S3 through CloudFront.
 - `apps/cms-api` is a Lambda backend-for-frontend that reads Prismic and returns normalized page JSON.
 - `infra` is the AWS CDK app that provisions S3, CloudFront, API Gateway HTTP API, Lambda functions, and static asset deployment.
 
@@ -17,13 +16,7 @@ Install dependencies:
 npm install
 ```
 
-Run the existing Next site:
-
-```bash
-npm run dev
-```
-
-Run the React migration app:
+Run the local site:
 
 ```bash
 npm run site
@@ -55,9 +48,7 @@ npm run lint
 
 This repo uses Agentic Workflow for specs, planning, review, capture, and shipping gates. Start with `AGENTS.md` for task routing, and see `docs/workflow/README.md` plus `docs/workflow/gates.md` for the configured workflow steps, freshness gates, telemetry, and org-knowledge settings.
 
-## AWS Migration Architecture
-
-The migration keeps the Next app as the source of truth while building a sibling delivery stack:
+## AWS Architecture
 
 - CloudFront serves static React assets from S3.
 - API Gateway routes `/cms/*` requests to the CMS Lambda.
@@ -65,6 +56,7 @@ The migration keeps the Next app as the source of truth while building a sibling
 - The HTML-shell Lambda injects route-specific title, description, canonical, Open Graph, and Twitter tags, then returns the React app shell.
 - The CMS Lambda fetches Prismic content at request time and normalizes issue ordering, article navigation, works cited, references, media data, and page-specific content fixes.
 - Prismic preview uses an HTTP-only preview cookie and disables caching for preview responses.
+- Legacy issue URLs such as `/issue-13/` and `/issue-13/akari-komura/` redirect to the current `/issues/issue-13` and `/articles/issue-13--akari-komura` route shape.
 
 ## Deployment
 

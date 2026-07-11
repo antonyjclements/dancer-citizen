@@ -55,6 +55,17 @@ describe("html shell metadata", () => {
     expect(contentMock.getMetadataForPath).toHaveBeenCalledWith("/articles/civic", { ref: undefined });
   });
 
+  it("redirects legacy issue article URLs before metadata lookup", async () => {
+    const result = await handler({
+      rawPath: "/issue-13/akari-komura/",
+      rawQueryString: "utm_source=archive",
+    } as APIGatewayProxyEventV2);
+
+    expect(result.statusCode).toBe(301);
+    expect(result.headers?.location).toBe("/articles/issue-13--akari-komura?utm_source=archive");
+    expect(contentMock.getMetadataForPath).not.toHaveBeenCalled();
+  });
+
   it("returns no-store not-found shell metadata when metadata lookup fails", async () => {
     contentMock.getMetadataForPath.mockRejectedValue(new Error("missing"));
 

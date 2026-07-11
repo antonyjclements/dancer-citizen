@@ -1,28 +1,25 @@
 # Use the Shared Prismic Client
 
-All Prismic access must go through `createClient()` from `src/foundation/prismic/prismicClient.ts`. This keeps route resolution, preview support, and cache behavior centralized.
+All CMS API Prismic access must go through `createPrismicClient()` from `apps/cms-api/src/prismic.ts`. This keeps repository configuration and preview refs centralized.
 
 ## Use This When
 
-- Reading Prismic content in app routes, feature data loaders, route handlers, or utilities.
+- Reading Prismic content in CMS API route handlers, content loaders, or utilities.
 - Adding new document types or page data helpers.
 
 ## Do
 
-- Import `createClient` from `@/foundation/prismic/prismicClient` for app and feature code.
-- Keep repository name, routes, fetch options, preview setup, and cache tags inside the shared client.
-- Pass `ClientConfig` overrides into `createClient()` only when a caller has a specific need.
+- Import `createPrismicClient` from `./prismic` inside the CMS API package.
+- Keep repository name and preview ref wiring inside the shared client.
+- Pass preview context into `createPrismicClient()` when handling preview requests.
 
 ## Avoid
 
 - Calling `@prismicio/client`'s base `createClient` outside the shared client module.
-- Re-declaring Prismic routes, repository names, preview setup, or cache settings in feature code.
+- Re-declaring Prismic repository names or preview ref setup in content-loading code.
 
 ## Evidence
 
-- `src/foundation/prismic/prismicClient.ts`
-- `src/features/journal/data/getHomePageData.ts`
-- `src/features/journal/data/getIssuePageData.ts`
-- `src/features/journal/data/getArticlePageData.ts`
-- `src/features/journal/data/getContentPageData.ts`
-- `src/app/api/preview/route.ts`
+- `apps/cms-api/src/prismic.ts`
+- `apps/cms-api/src/content.ts`
+- `apps/cms-api/src/handler.ts`

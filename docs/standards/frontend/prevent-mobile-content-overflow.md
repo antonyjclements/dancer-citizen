@@ -1,6 +1,6 @@
 # Prevent Mobile Content Overflow
 
-CMS-rendered content must not make the page wider than the device viewport. Apply explicit wrapping and shrink constraints to rich text, references, works cited, long URLs, and grid/flex children in both the current Next app and the AWS React migration.
+CMS-rendered content must not make the page wider than the device viewport. Apply explicit wrapping and shrink constraints to rich text, references, works cited, long URLs, and grid/flex children in the React app.
 
 ## Use This When
 
@@ -26,6 +26,7 @@ CMS-rendered content must not make the page wider than the device viewport. Appl
 
 ## Evidence
 
-- `src/features/journal/components/ArticleReferences.tsx`
-- `src/foundation/rich-text/richTextComponents.tsx`
+- `apps/react-site/src/components/Slices.tsx`
+- `apps/react-site/src/pages/ArticlePage.tsx`
+- `apps/react-site/src/pages/ContentPage.tsx`
 - `apps/react-site/src/styles.css`

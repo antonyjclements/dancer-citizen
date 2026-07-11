@@ -1,6 +1,6 @@
 # Centralize Prismic Document URL Rules
 
-Prismic document URL generation must stay centralized so routing, previews, summaries, and UI links agree on the same paths. Use `getJournalDocumentHref()` or normalized `href` fields instead of rebuilding document paths inside components.
+Prismic document URL generation must stay centralized so routing, previews, summaries, and UI links agree on the same paths. Use `getHref()`/`getSummary()` in the CMS API or normalized `href` fields instead of rebuilding document paths inside React components.
 
 ## Use This When
 
@@ -10,8 +10,8 @@ Prismic document URL generation must stay centralized so routing, previews, summ
 
 ## Do
 
-- Update `src/foundation/prismic/prismicRoutes.ts` when adding or changing a Prismic document route.
-- Update the feature href helper, currently `src/features/journal/data/getJournalDocumentHref.ts`, in the same change.
+- Update `apps/cms-api/src/content.ts` when adding or changing a Prismic document route or href rule.
+- Update `infra/lib/dancer-citizen-web-stack.ts` when a public route must be served by the HTML-shell Lambda.
 - Prefer passing normalized `href` values from data loaders into UI components.
 - Keep document type unions exhaustive so new types force URL-rule updates.
 
@@ -21,13 +21,8 @@ Prismic document URL generation must stay centralized so routing, previews, summ
 - Letting Prismic route definitions and UI href generation drift.
 - Adding a new document type without deciding its public URL rule.
 
-## Migration Note
-
-Some existing issue-only components still hardcode `/issues/${uid}`. Treat those as migration targets when touching the area; new document links should use centralized href rules or normalized `href` props.
-
 ## Evidence
 
-- `src/foundation/prismic/prismicRoutes.ts`
-- `src/features/journal/data/getJournalDocumentHref.ts`
-- `src/features/journal/data/getJournalDocumentSummary.ts`
-- Migration targets: `src/features/journal/components/IssueArchiveGrid.tsx`, `src/features/journal/components/IssueNavigation.tsx`, `src/features/journal/components/LatestIssuePanel.tsx`
+- `apps/cms-api/src/content.ts`
+- `apps/react-site/src/api.ts`
+- `infra/lib/dancer-citizen-web-stack.ts`

@@ -150,6 +150,11 @@ export class DancerCitizenWebStack extends cdk.Stack {
       methods: [apigwv2.HttpMethod.GET],
       integration: htmlIntegration,
     });
+    new apigwv2.HttpRoute(this, "HtmlDefaultRoute", {
+      httpApi,
+      routeKey: apigwv2.HttpRouteKey.DEFAULT,
+      integration: htmlIntegration,
+    });
 
     const apiDomainName = cdk.Fn.select(2, cdk.Fn.split("/", httpApi.apiEndpoint));
     const apiOrigin = new origins.HttpOrigin(apiDomainName, {
@@ -187,6 +192,8 @@ export class DancerCitizenWebStack extends cdk.Stack {
         },
         "articles/*": htmlBehavior,
         "issues/*": htmlBehavior,
+        "issue-*": htmlBehavior,
+        "issue-*/*": htmlBehavior,
         about: htmlBehavior,
         admin: htmlBehavior,
         "admin/*": htmlBehavior,

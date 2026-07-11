@@ -2,13 +2,14 @@
 title: Public Journal Experience
 status: active
 created: 2026-05-25
-updated: 2026-07-10
+updated: 2026-07-11
 tags:
   - journal
   - prismic
   - public-site
 related_decisions:
   - docs/decisions/2026-07-10-do-not-inject-editor-role-labels.md
+  - docs/decisions/2026-07-11-remove-legacy-next-runtime.md
 related_standards:
   - docs/standards/prismic/centralize-prismic-document-url-rules.md
   - docs/standards/prismic/keep-page-queries-in-feature-data-loaders.md
@@ -45,8 +46,9 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - Article navigation links to the parent issue table of contents plus previous/next entries using the issue's curated table-of-contents order.
 - Article navigation may include content pages such as "About the Contributors" when those documents are part of the curated issue order.
 - Article pages generate article-specific title, description, canonical, Open Graph, and Twitter metadata from Prismic fields.
-- The sibling AWS React delivery path preserves the same public route set and consumes normalized journal data from `/cms/home`, `/cms/issues/:uid`, `/cms/articles/:uid`, and `/cms/pages/:uid`.
-- In the AWS React delivery path, route-specific article, issue, and content-page social metadata is returned by the HTML-shell Lambda before the React app hydrates.
+- The React delivery path consumes normalized journal data from `/cms/home`, `/cms/issues/:uid`, `/cms/articles/:uid`, and `/cms/pages/:uid`.
+- Route-specific article, issue, and content-page social metadata is returned by the HTML-shell Lambda before the React app hydrates.
+- Legacy issue article URLs shaped like `/issue-13/akari-komura/` redirect to `/articles/issue-13--akari-komura`, and legacy issue URLs shaped like `/issue-13/` redirect to `/issues/issue-13`.
 - Prismic images render with non-empty alt text from the image field when available, falling back to nearby captions, credits, or titles.
 - Content pages render a header and then the Prismic body through `SliceZone`.
 - Contributor list slices decode imported legacy title-link payloads into readable contributor names, same-page anchors, issue labels, and inline `read more` links.
@@ -83,11 +85,11 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 2. The relevant feature data loader fetches the Prismic document.
 3. Article pages fetch the parent issue and derive previous/next links from its curated issue order.
 4. The page renders a header and body slices.
-5. If the document does not exist, Next renders the not-found experience.
+5. If the document does not exist, the React app renders the not-found experience.
 
-### Read Through the AWS React Path
+### Read Through the React Path
 
-1. Reader opens the same public route on the CloudFront-hosted React site.
+1. Reader opens a public route on the CloudFront-hosted React site.
 2. The React app fetches the corresponding normalized `/cms/*` JSON endpoint.
 3. The CMS API applies the same journal ordering, navigation, page normalization, and metadata rules.
 4. The React app renders the page client-side.
@@ -114,12 +116,12 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - Issue table-of-contents entries use centralized journal href generation.
 - Issue table-of-contents order matches the issue's curated linked document order when Prismic provides one.
 - Prismic reads go through the shared client and page-level reads stay in feature data loaders.
-- The AWS React delivery path preserves article-specific social metadata without falling back to a generic SPA `index.html`.
+- The React delivery path preserves article-specific social metadata without falling back to a generic SPA `index.html`.
+- The React delivery path redirects legacy issue and issue-article URLs to their current public route shape.
 
 ## Boundaries and Non-Goals
 
-- The current site generates article metadata from Prismic documents, but issue and content pages still use default metadata.
-- The AWS React delivery path can generate route-specific metadata for articles, issues, and configured content pages through its HTML-shell Lambda, but it is not yet the production cutover target.
+- The HTML-shell Lambda generates route-specific metadata for articles, issues, and configured content pages.
 - The current site does not implement sitemap generation, even though content models include hide-from-sitemap flags.
 - The newsletter form is static markup and does not submit to a backend.
 - The article issue backlink currently points to `/`, not the specific issue page.
@@ -128,7 +130,7 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 ## Open Questions / TODOs
 
 - Should article headers link back to the exact issue page instead of the home page?
-- Should issue and content page `meta_title` and `meta_description` fields drive Next metadata?
+- Should issue and content page `meta_title` and `meta_description` fields override summary-derived HTML-shell metadata?
 - Should `hide_from_sitemap` and navigation settings have a public sitemap/navigation implementation?
 - Should the newsletter form submit to a provider or be replaced with an external embed?
 - Should the home latest-issue panel include a compact table of contents at all, or should table-of-contents navigation live only on issue pages?

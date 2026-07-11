@@ -1,4 +1,13 @@
 decisions:
+  - path: docs/decisions/2026-07-11-remove-legacy-next-runtime.md
+    title: Remove Legacy Next Runtime
+    date: 2026-07-11
+    status: active
+    tags:
+      - aws
+      - architecture
+      - react
+      - public-site
   - path: docs/decisions/2026-06-19-use-react-lambda-bff-for-aws-delivery.md
     title: Use React and Lambda BFF for AWS Delivery
     date: 2026-06-19

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Route, Routes, useLocation } from "react-router-dom";
+import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { IssuePage } from "./pages/IssuePage";
 import { ArticlePage } from "./pages/ArticlePage";
@@ -7,6 +7,7 @@ import { ContentPage } from "./pages/ContentPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { SubmissionThankYouPage } from "./pages/SubmissionThankYouPage";
 import { AdminSubmissionsPage } from "./pages/AdminSubmissionsPage";
+import { getLegacyRedirectPath } from "./legacyRedirects";
 import logoSrc from "./assets/dancer-citizen-icon.png";
 
 const navLinks = [
@@ -26,6 +27,15 @@ function ScrollToTop() {
   }, [pathname, search]);
 
   return null;
+}
+
+function LegacyRedirect() {
+  const location = useLocation();
+  const redirectPath = getLegacyRedirectPath(location.pathname);
+
+  if (!redirectPath) return <NotFoundPage />;
+
+  return <Navigate to={`${redirectPath}${location.search}${location.hash}`} replace />;
 }
 
 export function App() {
@@ -81,6 +91,8 @@ export function App() {
         <Route path="/submissions/thank-you" element={<SubmissionThankYouPage />} />
         <Route path="/admin" element={<AdminSubmissionsPage />} />
         <Route path="/admin/submissions" element={<AdminSubmissionsPage />} />
+        <Route path="/:issueUid/:articleUid" element={<LegacyRedirect />} />
+        <Route path="/issue-:issueNumber" element={<LegacyRedirect />} />
         <Route path="/:uid" element={<ContentPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

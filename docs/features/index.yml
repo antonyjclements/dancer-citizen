@@ -17,7 +17,7 @@ features:
       - slices
       - content-model
   - key: prismic-preview-and-cache-revalidation
-    title: Prismic Preview and Cache Revalidation
+    title: Prismic Preview and Cache Behavior
     spec: docs/features/prismic-preview-and-cache-revalidation/spec.md
     status: active
     tags:

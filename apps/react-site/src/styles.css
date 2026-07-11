@@ -115,12 +115,13 @@ img { max-width: 100%; display: block; }
   max-width: 1100px;
   margin: 0;
   font-family: "Cormorant Garamond", serif;
-  font-size: clamp(56px, 10vw, 118px);
+  font-size: clamp(56px, 8.5vw, 108px);
   font-weight: 500;
   line-height: 0.92;
 }
 
 .hero h1 {
+  max-width: none;
   white-space: nowrap;
 }
 
@@ -909,7 +910,8 @@ blockquote {
   }
 
   .hero h1 {
-    white-space: normal;
+    font-size: clamp(30px, 10vw, 72px);
+    white-space: nowrap;
   }
 
   .biography-card {
