@@ -8,3 +8,20 @@ decisions:
       - architecture
       - prismic
       - public-site
+  - path: docs/decisions/2026-07-10-use-simple-admin-auth-for-submissions.md
+    title: Use Simple Admin Auth for Submissions
+    date: 2026-07-10
+    status: active
+    tags:
+      - submissions
+      - admin
+      - security
+      - aws
+  - path: docs/decisions/2026-07-10-do-not-inject-editor-role-labels.md
+    title: Do Not Inject Editor Role Labels
+    date: 2026-07-10
+    status: active
+    tags:
+      - public-site
+      - editors
+      - prismic

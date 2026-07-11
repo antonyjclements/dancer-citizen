@@ -5,6 +5,7 @@ import type { Content } from "@prismicio/client";
 import { formatPlainText } from "@/foundation/formatters/formatPlainText";
 import { formatPublicationDate } from "@/foundation/formatters/formatPublicationDate";
 import { getImageFieldWithAlt } from "@/foundation/prismic/getImageFieldWithAlt";
+import { getJournalDocumentHref } from "../data/getJournalDocumentHref";
 
 type IssueDocument = Omit<Content.IssuePageDocument, "uid" | "tags"> & { uid: string; tags: string[] };
 
@@ -31,7 +32,7 @@ export function IssueArchiveGrid({ issues }: IssueArchiveGridProps) {
 
             return (
               <Link
-                href={`/issues/${issue.uid}`}
+                href={getJournalDocumentHref("issue_page", issue.uid)}
                 className="group flex min-h-[360px] flex-col bg-paper transition-colors duration-200 hover:bg-paper-deep"
                 key={issue.id}
               >

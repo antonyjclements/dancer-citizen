@@ -14,7 +14,7 @@ export function ArticlePage() {
   const loadArticle = useCallback(() => getJson<ArticleData>(`/articles/${uid}`), [uid]);
   const state = useAsyncData(`article:${uid}`, loadArticle);
   if (state.status === "loading") return <Loading />;
-  if (state.status === "error") return state.error.message === "not-found" ? <NotFoundPage /> : <main className="page"><h1>Article unavailable</h1></main>;
+  if (state.status === "error") return <NotFoundPage />;
 
   const article = state.data.article;
 
@@ -23,9 +23,9 @@ export function ArticlePage() {
       <section className="article-hero">
         {state.data.issue ? <Link to={state.data.issue.href}>{state.data.issue.title}</Link> : null}
         <h1>{stripLegacyHtml(article.data.hero_title || article.data.title || state.data.summary.title)}</h1>
-        {article.data.hero_subtitle ? <p>{stripLegacyHtml(article.data.hero_subtitle)}</p> : null}
       </section>
       <section className="body">
+        {article.data.hero_subtitle ? <p className="body-intro">{stripLegacyHtml(article.data.hero_subtitle)}</p> : null}
         <Slices slices={article.data.body} references={article.data.references} />
         {article.data.references?.length ? (
           <section className="references" id="references">

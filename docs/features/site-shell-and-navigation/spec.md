@@ -2,7 +2,7 @@
 title: Site Shell and Navigation
 status: active
 created: 2026-05-25
-updated: 2026-06-19
+updated: 2026-07-10
 tags:
   - layout
   - navigation
@@ -31,7 +31,8 @@ The site shell provides persistent branding, navigation, typography, global styl
 - The body uses a warm paper background and ink text by default.
 - The header is fixed to the top of the viewport with a blurred paper background and bottom border.
 - Header branding links to `/`.
-- Desktop navigation links to `/`, `/about`, `/submissions`, `/contributors`, and `/support-us`.
+- Desktop navigation links include `/about`, `/editors-staff`, `/submissions`, `/contributors`, `/in-the-moment`, and `/support-us`.
+- The Support Us link should be the final item in the header menu, after In the Moment.
 - Mobile navigation uses a client-side open/closed state, a button with `aria-expanded` and `aria-controls`, and closes after selecting a link.
 - The footer includes brand description, contact details, support copy, a donation link, copyright, and ISSN placeholder.
 - The footer donation link routes to the local `/support-us` page; the PayPal payment handoff lives on that content page rather than in the persistent footer.
@@ -74,6 +75,7 @@ The site shell provides persistent branding, navigation, typography, global styl
 
 - Every app page renders inside the shared root layout.
 - Header navigation is available on desktop and mobile.
+- Header navigation presents Support Us last, after In the Moment.
 - Mobile navigation exposes expanded/collapsed state to assistive technology.
 - React client-side navigation resets scroll position to the top of the new page.
 - The footer remains available after page content.

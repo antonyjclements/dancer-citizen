@@ -1,31 +1,97 @@
-ticket_creation:
-  provider: manual
-  skill: ""
-  project_key: ""
-  team: ""
-  default_labels: []
-  default_priority: ""
-  story_template: default
-research:
-  slack:
-    provider: manual
-    skill: ""
-    workspace: ""
-    default_channels: []
+workflow:
+  implementation:
+    test_policy: acceptance-first
+  steps:
+    prd:
+      skill: ""
+    brainstorm:
+      skill: ""
+    create_spec:
+      skill: ""
+    request_human_review:
+      skill: ""
+    plan:
+      skill: ""
+    review:
+      skill: ""
+    create_tickets:
+      skill: ""
+    work:
+      skill: ""
+    check_workflow_compliance:
+      skill: ""
+    commit:
+      skill: ""
+    commit_push_pr:
+      skill: ""
+    monitor_pipeline:
+      skill: ""
+  auxiliary:
+    refresh:
+      skill: ""
+    debug:
+      skill: ""
+    create_worktree:
+      skill: ""
+    capture:
+      skill: ""
+    discover_standards:
+      skill: ""
+    research_slack:
+      skill: ""
+    resolve_pr_feedback:
+      skill: ""
+    synthesize_memory:
+      skill: ""
+pull_request:
+  template:
+    title: ""
+    body: ""
+git:
+  commit:
+    format: conventional
+    scope_required: false
+    template: "<type>(<scope>): <description>"
+    allowed_types:
+      - feat
+      - fix
+      - docs
+      - chore
+      - refactor
+      - test
+      - ci
+      - build
+      - perf
+      - style
+    examples:
+      - "docs(readme): update usage guide"
 post_pr:
   ci_monitor:
     provider: manual
-    skill: ""
-    max_attempts: 3
-    poll_interval_seconds: 30
-    circleci:
-      vcs: github
-      org: ""
-      project: ""
-      branch: ""
-      token_env: CIRCLECI_CLI_TOKEN
 human_review:
   spec:
     reviewers: []
   plan:
     reviewers: []
+gates:
+  enabled: true
+  state_file: .aw-gate-state.json
+  checks:
+    review:
+      max_age_hours: 24
+    capture:
+      max_age_hours: 168
+    check_workflow_compliance:
+      max_age_hours: 24
+telemetry:
+  enabled: false
+  path: docs/metrics/events.jsonl
+  rotation: monthly
+  retention_months: 12
+org_knowledge:
+  source: ""
+  ref: main
+  cache_dir: .aw-org-cache
+  paths:
+    learnings: learnings
+    standards: standards

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 type NavigationLink = {
@@ -9,10 +9,11 @@ type NavigationLink = {
 };
 
 const navigationLinks: NavigationLink[] = [
-  { href: "/", label: "Issues" },
   { href: "/about", label: "About" },
+  { href: "/editors-staff", label: "Editors / Staff" },
   { href: "/submissions", label: "Submissions" },
   { href: "/contributors", label: "Contributors" },
+  { href: "/in-the-moment", label: "In the Moment" },
   { href: "/support-us", label: "Support Us" },
 ];
 
@@ -22,6 +23,17 @@ export function SiteHeader() {
   function closeMenu() {
     setIsMenuOpen(false);
   }
+
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, []);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-paper-deep/92 backdrop-blur-md border-b border-black/6">
@@ -38,7 +50,7 @@ export function SiteHeader() {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6 lg:gap-8">
           {navigationLinks.map((link) => (
             <Link
               href={link.href}
@@ -56,6 +68,7 @@ export function SiteHeader() {
           className="flex md:hidden flex-col gap-[5px] bg-transparent border-0 p-2 cursor-pointer"
           aria-expanded={isMenuOpen}
           aria-controls="mobile-navigation"
+          aria-label={isMenuOpen ? "Close main navigation" : "Open main navigation"}
           onClick={() => setIsMenuOpen((current) => !current)}
         >
           <span className="sr-only">Toggle navigation</span>

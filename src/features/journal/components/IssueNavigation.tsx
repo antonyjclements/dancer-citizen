@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Content } from "@prismicio/client";
+import { getJournalDocumentHref } from "../data/getJournalDocumentHref";
 
 type IssueDocument = Omit<Content.IssuePageDocument, "uid" | "tags"> & { uid: string; tags: string[] };
 
@@ -16,7 +17,7 @@ export function IssueNavigation({ previousIssue, nextIssue }: IssueNavigationPro
     >
       {previousIssue ? (
         <Link
-          href={`/issues/${previousIssue.uid}`}
+          href={getJournalDocumentHref("issue_page", previousIssue.uid)}
           className="text-[13px] font-bold tracking-[0.06em] uppercase text-muted hover:text-ink transition-colors"
         >
           ← Issue {previousIssue.data.issue_number}
@@ -26,7 +27,7 @@ export function IssueNavigation({ previousIssue, nextIssue }: IssueNavigationPro
       )}
       {nextIssue ? (
         <Link
-          href={`/issues/${nextIssue.uid}`}
+          href={getJournalDocumentHref("issue_page", nextIssue.uid)}
           className="text-[13px] font-bold tracking-[0.06em] uppercase text-muted hover:text-ink transition-colors"
         >
           Issue {nextIssue.data.issue_number} →

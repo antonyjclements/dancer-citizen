@@ -40,3 +40,12 @@ features:
       - layout
       - navigation
       - public-site
+  - key: submissions-management
+    title: Submissions Management
+    spec: docs/features/submissions-management/spec.md
+    status: active
+    tags:
+      - submissions
+      - aws
+      - admin
+      - public-site

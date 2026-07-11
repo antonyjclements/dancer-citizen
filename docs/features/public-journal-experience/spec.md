@@ -2,12 +2,13 @@
 title: Public Journal Experience
 status: active
 created: 2026-05-25
-updated: 2026-06-19
+updated: 2026-07-10
 tags:
   - journal
   - prismic
   - public-site
-related_decisions: []
+related_decisions:
+  - docs/decisions/2026-07-10-do-not-inject-editor-role-labels.md
 related_standards:
   - docs/standards/prismic/centralize-prismic-document-url-rules.md
   - docs/standards/prismic/keep-page-queries-in-feature-data-loaders.md
@@ -49,9 +50,14 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - Prismic images render with non-empty alt text from the image field when available, falling back to nearby captions, credits, or titles.
 - Content pages render a header and then the Prismic body through `SliceZone`.
 - Contributor list slices decode imported legacy title-link payloads into readable contributor names, same-page anchors, issue labels, and inline `read more` links.
-- The `/submissions` content page filters imported historical call-for-submissions slices down to the current public submissions copy, Wufoo form link, and Creative Commons/licensing copy.
+- The `/submissions` content page filters imported historical call-for-submissions slices down to the current public submissions copy, direct submission form, and Creative Commons/licensing copy.
 - The `/support-us` content page converts the imported PayPal donation text into a button-style external link that opens in a new tab.
 - Journal summaries normalize title, subtitle, issue number, publication date, and href for table-of-contents links.
+- The home page brand headline should keep "The Dancer-Citizen" on one line when the viewport has enough width to support it without overflow.
+- The latest issue presentation should not display a dead or non-clickable Issue 20 table of contents; if table-of-contents content is visible, entries should link to the corresponding issue, article, or content pages.
+- About-page rich text and imported links should render as clickable links.
+- The editors/staff page should prioritize Jane Alexandre, Julie B. Johnson, Erica Moshman, and Emily Metzner, then group past contributors under editorially meaningful headings.
+- The In the Moment page is expected to remain a pending-content page until editorial content is available.
 
 ## Key Flows
 
@@ -94,9 +100,15 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - `/articles/[uid]` displays the requested article header, body slices, and issue navigation when the article is linked to an issue.
 - `/articles/[uid]` exposes article-specific social sharing metadata and non-empty image alt text for rendered article media.
 - `/[uid]` displays the requested content page header and body slices.
+- `/about` renders imported links as clickable anchors.
 - `/contributors` displays contributor names and issue labels without exposing imported legacy JSON field payloads.
-- `/submissions` does not display superseded Issue 15, Issue 19, or closed Issue 20 call text when the current live-page copy is available in Prismic.
+- `/submissions` does not display superseded Issue 15, Issue 19, or closed Issue 20 call text when the current live-page copy and submission form are available.
 - `/support-us` displays the PayPal donation call to action as a button with `target="_blank"`.
+- `/editors-staff` lists Jane Alexandre, Julie B. Johnson, Erica Moshman, and Emily Metzner before other people, in that order; Jane Alexandre is marked "In Memoriam".
+- `/editors-staff` groups Takiyah Nur Amin, Saroya Corbett, Laura Jones, jsk, and Christiana McLeod Horn under "Past Editors".
+- `/editors-staff` groups Kimberly Binns and Carly Knudson under "Moving the Map".
+- `/in-the-moment` can show a clear pending-content state until editorial content is supplied.
+- The latest Issue 20 table-of-contents surface is either omitted when it cannot link anywhere or rendered with working links for every visible entry.
 - Missing issue, article, and content UIDs result in `notFound()`.
 - Issue ordering is descending on the home page and ascending for previous/next issue lookup.
 - Issue table-of-contents entries use centralized journal href generation.
@@ -119,6 +131,7 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - Should issue and content page `meta_title` and `meta_description` fields drive Next metadata?
 - Should `hide_from_sitemap` and navigation settings have a public sitemap/navigation implementation?
 - Should the newsletter form submit to a provider or be replaced with an external embed?
+- Should the home latest-issue panel include a compact table of contents at all, or should table-of-contents navigation live only on issue pages?
 
 ## Decision Links
 

@@ -5,6 +5,7 @@ import type { Content } from "@prismicio/client";
 import { formatPlainText } from "@/foundation/formatters/formatPlainText";
 import { formatPublicationDate } from "@/foundation/formatters/formatPublicationDate";
 import { getImageFieldWithAlt } from "@/foundation/prismic/getImageFieldWithAlt";
+import { getJournalDocumentHref } from "../data/getJournalDocumentHref";
 
 type IssueDocument = Omit<Content.IssuePageDocument, "uid" | "tags"> & { uid: string; tags: string[] };
 
@@ -24,6 +25,7 @@ export function LatestIssuePanel({ issue }: LatestIssuePanelProps) {
     : isFilled.image(issue.data.hero_image)
       ? issue.data.hero_image
       : null;
+  const issueHref = getJournalDocumentHref("issue_page", issue.uid);
 
   return (
     <section className="bg-ink text-white px-6 md:px-8 py-20">
@@ -38,17 +40,17 @@ export function LatestIssuePanel({ issue }: LatestIssuePanelProps) {
               {date ? ` · ${date}` : ""}
             </p>
             <h2 className="font-display text-[clamp(32px,4vw,52px)] italic font-normal leading-[1.2] text-white mb-6">
-              <Link href={`/issues/${issue.uid}`}>{title}</Link>
+              <Link href={issueHref}>{title}</Link>
             </h2>
             <Link
-              href={`/issues/${issue.uid}`}
+              href={issueHref}
               className="inline-block text-[13px] font-bold tracking-[0.08em] uppercase text-white border-b border-white/30 pb-0.5"
             >
               Read Issue →
             </Link>
           </div>
           <Link
-            href={`/issues/${issue.uid}`}
+            href={issueHref}
             className="group relative block aspect-[16/10] overflow-hidden bg-white/8"
             aria-label={`Read ${title}`}
           >

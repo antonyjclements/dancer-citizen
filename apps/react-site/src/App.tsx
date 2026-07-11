@@ -5,12 +5,16 @@ import { IssuePage } from "./pages/IssuePage";
 import { ArticlePage } from "./pages/ArticlePage";
 import { ContentPage } from "./pages/ContentPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { SubmissionThankYouPage } from "./pages/SubmissionThankYouPage";
+import { AdminSubmissionsPage } from "./pages/AdminSubmissionsPage";
+import logoSrc from "./assets/dancer-citizen-icon.png";
 
 const navLinks = [
-  { href: "/", label: "Home" },
   { href: "/about", label: "About" },
+  { href: "/editors-staff", label: "Editors / Staff" },
   { href: "/submissions", label: "Submissions" },
   { href: "/contributors", label: "Contributors" },
+  { href: "/in-the-moment", label: "In the Moment" },
   { href: "/support-us", label: "Support Us" },
 ];
 
@@ -42,7 +46,10 @@ export function App() {
     <>
       <ScrollToTop />
       <header className="site-header">
-        <Link to="/" className="brand" onClick={() => setIsMenuOpen(false)}>The Dancer-Citizen</Link>
+        <Link to="/" className="brand" aria-label="The Dancer-Citizen home" onClick={() => setIsMenuOpen(false)}>
+          <img src={logoSrc} alt="" className="brand-logo" />
+          <span className="sr-only">The Dancer-Citizen home</span>
+        </Link>
         <button
           type="button"
           className="menu-toggle"
@@ -71,6 +78,9 @@ export function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/issues/:uid" element={<IssuePage />} />
         <Route path="/articles/:uid" element={<ArticlePage />} />
+        <Route path="/submissions/thank-you" element={<SubmissionThankYouPage />} />
+        <Route path="/admin" element={<AdminSubmissionsPage />} />
+        <Route path="/admin/submissions" element={<AdminSubmissionsPage />} />
         <Route path="/:uid" element={<ContentPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
@@ -80,7 +90,7 @@ export function App() {
           <p>An open-access, peer-reviewed dance journal exploring dance, civic life, and public imagination.</p>
         </div>
         <div>
-          <p>Contact: <a href="mailto:editors@dancercitizen.org">editors@dancercitizen.org</a></p>
+          <p>Contact: <a href="mailto:info@dancercitizen.org">info@dancercitizen.org</a></p>
           <Link to="/support-us">Support the journal</Link>
         </div>
       </footer>
