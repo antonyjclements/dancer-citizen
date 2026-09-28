@@ -1,11 +1,11 @@
-# Enforcement Gates, Telemetry, and Org Knowledge
+# Enforcement Gates, Telemetry, Org Knowledge, Traceability, Workflow Trace, and Behavior Pins
 
 A practical guide to `.scripts/aw-gate.js` — the dependency-free helper that turns
 the workflow's advisory review/capture/compliance steps into a deterministic,
 enforceable contract, records lightweight telemetry, and syncs an org-shared
 knowledge tier.
 
-All three capabilities are **opt-in and disabled by default**. This guide covers
+All seven capabilities are **opt-in and disabled by default**. This guide covers
 what they are, how to configure them, and how to wire enforcement into a Git hook
 or CI. For the terse schema, see [README.md](README.md); this file is the how-to.
 
@@ -16,6 +16,16 @@ or CI. For the terse schema, see [README.md](README.md); this file is the how-to
 > "did we review this?" enforceable and deterministic, while the judgment of
 > whether the review was any good stays with the agent and the humans. Keep that
 > boundary in mind when deciding what to gate on.
+>
+> **Receipts close the "stamp without running" gap.** Left alone, `record review`
+> is a single command an agent can run to clear a blocked push *without running
+> `aw-review` at all*. When `gates.require_receipt` is on, `record` refuses to
+> stamp unless the skill has just written a fresh, gate-named **receipt**
+> summarizing what it did, and consumes that receipt (single-use) so it cannot
+> re-stamp a later commit. This does not make a lazy review good — it raises the
+> floor from "type one command" to "produce recent, substantive, single-use
+> evidence", and leaves an auditable trail. It is a deterrent and an audit aid,
+> not a proof of quality.
 
 ---
 
@@ -39,10 +49,11 @@ The helper is installed by `aw-init` behind a flag:
 skills/aw-init/scripts/install.sh --with-gates --repo /path/to/repo
 ```
 
-This adds `<repo>/.scripts/aw-gate.js`, appends `.aw-gate-state.json` and
-`.aw-org-cache/` to `.gitignore`, and writes the `gates` / `telemetry` /
-`org_knowledge` sections to `docs/workflow/config.yml` (those config sections are
-written on every install; the script itself is gated behind `--with-gates`).
+This adds `<repo>/.scripts/aw-gate.js`, appends `.aw-gate-state.json`,
+`.aw-org-cache/`, `.aw/tmp/`, `.aw/workflow-trace.jsonl`, and `.aw/pin/` to
+`.gitignore`, and writes the `gates` / `telemetry` / `org_knowledge` / `trace` /
+`workflow_trace` / `pin` sections to `docs/workflow/config.yml` (those config sections
+are written on every install; the script itself is gated behind `--with-gates`).
 
 Existing installs: re-run the installer with `--with-gates`, or
 `skills/aw-init/scripts/upgrade.sh` to add the config sections.
@@ -54,10 +65,33 @@ The script requires **Node ≥ 16** at the enforcement point (local hook or CI).
 ## 3. The CLI
 
 ```sh
-node .scripts/aw-gate.js record <event> [--detail "text"]
+node .scripts/aw-gate.js receipt <gate> --summary "text" [--detail "text"]
+node .scripts/aw-gate.js record <event> [--detail "text"] [--no-receipt]
 node .scripts/aw-gate.js check [--against head|worktree]
+node .scripts/aw-gate.js trace [--base <ref>] [--json] [--out <path>]
+node .scripts/aw-gate.js trace-annotate <spec|test|code> --file <path> --line <n> --id <ID>[,<ID>]
+node .scripts/aw-gate.js trace-annotate --batch .aw/tmp/trace-intents.<token>.json [--delete-batch-on-success]
+node .scripts/aw-gate.js workflow-record <event> [--tier <tier>] [--step <step>] [--gate <gate>] [--status <status>] [--reason <text>]
+node .scripts/aw-gate.js workflow-check [--base <ref>] [--since-commit <ref>] [--json]
+node .scripts/aw-gate.js pin run [--json] [--out <path>]
+node .scripts/aw-gate.js pin check [--base <ref>] [--json]
 node .scripts/aw-gate.js org-sync
 ```
+
+### `receipt <gate>`
+
+Writes a git-ignored **proof-of-work receipt** for `<gate>` to
+`<gates.receipt_dir>/<gate>.json` (default `.aw/receipts/<gate>.json`). The skill
+calls this when it finishes, passing a `--summary` that restates what it did. The
+receipt records `{ gate, ts, commit, summary, detail }`. `record` verifies and
+then consumes it.
+
+```sh
+node .scripts/aw-gate.js receipt review --summary "reviewed the auth diff; fixed one P1, no P0s"
+```
+
+`--summary` is required and must be non-empty — an empty summary is refused, so
+stamping always carries at least a stated claim of what ran.
 
 ### `record <event>`
 
@@ -70,10 +104,28 @@ latest stamp wins.
 node .scripts/aw-gate.js record review --detail "code review"
 ```
 
-The bundled skills call this automatically when they finish:
+When the gate is **receipt-required** (`gates.require_receipt: true`, or a
+per-gate `checks.<name>.require_receipt: true`), `record` first verifies a fresh,
+gate-matching receipt written by `receipt <gate>`:
+
+- the receipt's `gate` must equal `<event>`;
+- its `summary` must be non-empty;
+- its `ts` must be within `gates.receipt_max_age_minutes` (default 180) — a stale
+  or reused-from-last-week receipt is rejected;
+
+then folds a digest of it into the state entry and **deletes** the receipt so it
+is single-use. Without a valid receipt, `record` exits non-zero and does not
+stamp. `--no-receipt` bypasses this check with a loud stderr warning — it exists
+only for bootstrap (the commit that first enables the gate, fresh clones, hand
+use), never to skip running the skill.
+
+The bundled skills call `receipt` then `record` automatically when they finish:
 `aw-review` → `review`, `aw-capture` → `capture`,
 `aw-check-workflow-compliance` → `check_workflow_compliance`,
-`aw-synthesize-memory` → `synthesize`. You can also call it by hand.
+`aw-synthesize-memory` → `synthesize`. `aw-synthesize-memory` records its gate
+on every invocation, including no-op runs with no unprocessed sessions (its
+receipt summary says so), so an age-based `synthesize` gate can enforce periodic
+memory review. You can also call them by hand.
 
 ### `check`
 
@@ -87,10 +139,170 @@ put in a hook or CI job.
 - `--against worktree`: compare to the working tree (staged + unstaged). Use in a
   **pre-commit** hook so edits not yet committed are considered.
 
+When `docs/metrics/**` has staged, modified, or untracked files, `check` also
+prints a non-blocking warning. Those files are workflow exhaust produced by
+tracking and telemetry; commit them before opening a PR.
+
+`check` also validates the **learning audit trail** whenever `gates.enabled` is
+true, independently of what is configured under `gates.checks`. Every
+`docs/learnings/*.md` must carry a non-empty `derived-from`, and its
+`evidence-count` must equal the number of identifiers listed. A learning that
+cites no session cannot be corroborated, expired on schedule, or traced back to
+where the lesson came from.
+
+This runs here rather than only in `scripts/test-install.sh` because that script
+executes in the augmented-workflow repo and its test-install targets — never in
+your repo, which is where learnings actually accumulate.
+
+The usual cause of a failure is a learning written mid-session by
+`aw-capture learning`: the session log and its `YYYY-MM-DD-<slug>` identifier
+are not created until the session ends, so at capture time there was nothing to
+cite. Fix it by adding the identifier of the session the lesson came from, and
+correcting `evidence-count` to match. A repo with no `docs/learnings/`
+directory passes.
+
+Some learnings genuinely have no session to cite — those written before the repo
+adopted the memory loop, or imported from elsewhere. Exempt one by stating why,
+in the learning itself:
+
+```yaml
+derived-from: []
+audit-trail-exempt: predates the memory loop (2026-07-02); no session log exists to cite
+```
+
+The reason is required: `audit-trail-exempt:` with nothing after it exempts
+nothing. The exemption lives in the file rather than in a list inside the tool
+so that it travels with the artifact and has to be justified in the diff where a
+reviewer will see it.
+
+`check` additionally validates **derived state** — registries and the context
+wiki are generated from source artifacts, so they drift silently and nothing
+fails at runtime; an agent simply follows a pointer to a file that is not there.
+It reports:
+
+- an `index.yml` entry whose `path` or `spec` names a file that no longer exists
+- a `docs/features/*/spec.md` with no entry in `docs/features/index.yml`
+- a learning, standard, or wiki citing a session by **path** rather than by
+  identifier (retention deletes the log, so the link dangles)
+- a wiki reference to a `docs/`, `scripts/`, or `skills/` path that is missing
+- an `index.yml` this tool cannot parse
+
+Index files are workflow-generated, so the parser accepts a narrow shape and
+**reports what it does not recognize instead of guessing** — a validator that
+silently misparses would report safety it does not provide. The shape is a
+top-level `<name>:` key over a block list of maps (`  - key: value`,
+continuation `    key: value`, nested lists `      - item`), or `<name>: []`.
+Scalar keys beside the list are accepted and not inspected.
+
+### `validate`
+
+The same derived-state and audit-trail checks, without the freshness gates:
+
+```bash
+node .scripts/aw-gate.js validate
+```
+
+Exit **0** means derived state is consistent; exit **1** lists what drifted.
+Unlike `check` it does not read `gates.enabled` and needs no recorded state, so
+it works in a repo that has not adopted gates at all. `check` runs these checks
+too, so wiring `validate` separately is only worth it if you want registry
+validation without gate freshness.
+
 ### `org-sync`
 
 Shallow-clones or updates the configured org knowledge repo into the git-ignored
 cache. No-op when `org_knowledge.source` is blank.
+
+### `trace`
+
+Checks opt-in spec traceability without an agent:
+
+- every `@spec` reference in test/code points to a living spec requirement
+- every requirement has at least one test anchor
+- missing code anchors warn by default, or fail when `trace.require_code_anchor`
+  is true
+- with `--base <ref>`, changed anchored tests must be paired with a changed
+  owning spec or a `Spec-Override:` commit trailer
+
+Exit 0 means clean, warnings-only, or disabled. Exit 1 means at least one error
+finding. `--json` prints a stable `{ summary, matrix, findings }` object, and
+`--out <path>` writes the same object for CI artifacts.
+
+### `trace-annotate`
+
+Skills use this as the deterministic policy boundary for writing annotations.
+When `trace.enabled` is false it skips writes; when a safe batch file under
+`.aw/tmp/trace-intents.*.json` is supplied, it deletes that transient file before
+exiting. When enabled it validates IDs and line targets before writing.
+
+`aw-work` should prefer batch mode so subagents return annotation intents to the
+parent, the parent writes one `.aw/tmp/trace-intents.<token>.json`, and the helper
+merges labels and applies edits once:
+
+```json
+{
+  "intents": [
+    { "kind": "test", "file": "src/auth.test.ts", "line": 34, "ids": ["AUTH-001"] },
+    { "kind": "code", "file": "src/auth.ts", "line": 8, "ids": ["AUTH-001", "AUTH-002"] }
+  ]
+}
+```
+
+Use `--delete-batch-on-success` for normal enabled runs. Failed enabled batches
+are preserved for debugging unless the caller removes them in its cleanup step.
+
+### `workflow-record`
+
+Appends one process breadcrumb to `workflow_trace.path` when
+`workflow_trace.enabled` is true:
+
+```sh
+node .scripts/aw-gate.js workflow-record tier --tier feature --reason "workflow behavior changed"
+node .scripts/aw-gate.js workflow-record step --step aw-work --status ran --artifact docs/features/foo/spec.md
+```
+
+When disabled, it exits 0 without writing. Separately, `record <gate>`
+automatically appends a `gate` event when workflow trace is enabled, so freshness
+gate execution can be checked as process evidence.
+
+### `workflow-check`
+
+Reads `workflow_trace.path` and exits non-zero when required breadcrumbs are
+missing. The initial checks are deliberately small: a tier event when
+`workflow_trace.require_tier` is true, and gate events named in
+`workflow_trace.required_gates`. Use `--base` or `--since-commit` to consider
+only events recorded by commits in that range. Appends retain the newest
+`workflow_trace.max_events` entries and trim oldest lines until the file is under
+`workflow_trace.max_bytes`.
+
+### `pin run`
+
+Runs each `docs/features/*/behavior-pin.yml` manifest. The default same-repo mode
+compares the manifest's old `base` with the current checkout, copying current
+oracle/support files into a temporary worktree so both sides run the same
+harness. `mode: reference-repo` checks out `reference.repo` at `reference.ref`
+under `.aw/pin/` and runs the current-tree harness once with
+`AW_PIN_REFERENCE_ROOT`, `AW_PIN_CANDIDATE_ROOT`, `AW_PIN_MANIFEST`,
+`AW_PIN_MODE`, and optional `AW_PIN_GOLDEN_ROOT`.
+
+Results are written to `pin.out` with verdicts:
+
+- `pass`: old and new both pass
+- `pin-not-characterizing`: old/reference failed, so the oracle does not describe reality
+- `equivalence-broken`: old/reference passed and new failed
+
+Manifest `setup` and `harness` commands must be empty or
+`node <repo-relative .js path>`. `pin run` does not execute shell strings.
+Reference-repo harnesses can exit `10` to report `pin-not-characterizing`.
+Golden fixture config is recorded as provenance but does not replace live
+reference execution.
+
+### `pin check`
+
+Checks commit history from `--base` (default `origin/main`) to `HEAD` and fails
+when one commit changes both a pin's subject and its oracle/support files. Use a
+manifest-scoped `Pin-Override: docs/features/<feature>/behavior-pin.yml — <reason>`
+trailer only when coupling those edits is intentional.
 
 ---
 
@@ -99,6 +311,9 @@ cache. No-op when `org_knowledge.source` is blank.
 ```yaml
 gates:
   enabled: true                  # master switch; false makes `check` a no-op
+  require_receipt: true          # `record` needs a fresh receipt from the skill
+  receipt_dir: .aw/receipts      # where receipts are written (git-ignored)
+  receipt_max_age_minutes: 180   # how recent a receipt must be to count
   state_file: .aw-gate-state.json
   checks:
     review:
@@ -109,6 +324,9 @@ gates:
     check_workflow_compliance:
       mode: age
       max_age_hours: 168
+    synthesize:
+      mode: age
+      max_age_hours: 336
 ```
 
 - `enabled` — when `false`, `check` prints "gates disabled" and exits 0. Nothing
@@ -118,6 +336,15 @@ gates:
 - `checks.<name>` — one entry per gate. `<name>` is the event the matching skill
   records. Remove an entry to stop enforcing that gate (the skill still records
   it harmlessly).
+- `require_receipt` — when `true`, `record <name>` refuses to stamp unless the
+  skill has just written a fresh receipt (see [§3](#3-the-cli)). Defaults to
+  `false` in the tool for backward compatibility; the installer ships it `true`.
+  A per-gate `checks.<name>.require_receipt` boolean overrides this default for
+  one gate — e.g. keep it strict for `review` but relax it for `synthesize`.
+- `receipt_dir` — where receipts are written and consumed. Keep it git-ignored;
+  the installer adds `.aw/receipts/` to `.gitignore`.
+- `receipt_max_age_minutes` — how recent a receipt must be to be accepted
+  (default 180). Tightening it forces the skill to have run closer to the stamp.
 
 ### Modes
 
@@ -201,6 +428,8 @@ contains:
 
 ```sh
 node .scripts/aw-gate.js check
+node .scripts/aw-gate.js trace
+node .scripts/aw-gate.js pin check
 ```
 
 `npm install` re-installs the hooks (via the `prepare` script), so every clone is
@@ -235,9 +464,14 @@ node .scripts/aw-gate.js check --against worktree
   with:
     node-version: 20
 - run: node .scripts/aw-gate.js check
+- run: node .scripts/aw-gate.js trace --base origin/${{ github.base_ref }}
+- run: node .scripts/aw-gate.js pin check --base origin/${{ github.base_ref }}
+- run: node .scripts/aw-gate.js pin run
 ```
 
 Make it a **required** status check on the branch so a red gate blocks merge.
+Only add trace or pin lines after enabling their config. Disabled commands are
+no-ops, but CI jobs are useful only for opted-in repos.
 
 > **Shallow clones:** commit mode resolves the recorded commit with git. In CI,
 > fetch full history (`fetch-depth: 0`); otherwise the recorded commit may be
@@ -245,10 +479,91 @@ Make it a **required** status check on the branch so a red gate blocks merge.
 
 ---
 
-## 6. The everyday loop
+## 6. Spec traceability conventions
 
-1. You do work and run a skill — e.g. `aw-review`. On completion it runs
-   `node .scripts/aw-gate.js record review`, stamping the current commit/time.
+Traceability is opt-in and disabled by default:
+
+```yaml
+trace:
+  enabled: false
+  spec_paths:
+    - "docs/features/*/spec.md"
+  test_paths:
+    - "*.feature"
+    - "*.test.ts"
+    - "*.test.tsx"
+    - "*.spec.ts"
+  code_paths:
+    - "src"
+  require_code_anchor: false
+```
+
+Requirement IDs are markdown headings in living specs:
+
+```markdown
+### AUTH-001 — Session expires after inactivity
+```
+
+Tests anchor to requirements on or immediately above the test/scenario:
+
+```ts
+// @spec:AUTH-001
+test('session ends after 30 idle minutes', () => {})
+```
+
+Code anchors belong only at behavior entry points:
+
+```ts
+// @spec AUTH-001, AUTH-002
+export function createSession() {}
+```
+
+When a test legitimately changes without its owning spec, include a commit
+trailer:
+
+```text
+Spec-Override: AUTH-001 — test asserted the wrong boundary
+```
+
+An anchor proves a link was claimed, not that the code conforms. Coupling proves
+a change was coordinated, not that it was correct. Traceability is workflow
+accountability, not quality assurance.
+
+---
+
+## 7. Workflow execution trace
+
+Workflow trace is opt-in and disabled by default:
+
+```yaml
+workflow_trace:
+  enabled: false
+  path: .aw/workflow-trace.jsonl
+  require_tier: true
+  required_gates:
+    - review
+    - check_workflow_compliance
+```
+
+The file is git-ignored local process evidence. Use `workflow-record` for
+explicit process facts and `workflow-check` to validate configured breadcrumbs:
+
+```sh
+node .scripts/aw-gate.js workflow-record tier --tier feature --reason "workflow behavior changed"
+node .scripts/aw-gate.js workflow-check
+```
+
+When enabled, every `record <gate>` call also writes a `gate` event to this file.
+
+---
+
+## 8. The everyday loop
+
+1. You do work and run a skill — e.g. `aw-review`. On completion it writes a
+   receipt (`receipt review --summary "…"`) and then runs
+   `node .scripts/aw-gate.js record review`, which verifies and consumes that
+   receipt and stamps the current commit/time. If the skill did not run, there is
+   no receipt and `record` refuses to stamp.
 2. You push. The pre-push hook runs `node .scripts/aw-gate.js check`.
 3. If the review gate is fresh (no non-doc changes since the review, per its
    `paths`), the push proceeds. If you changed code after reviewing, the gate is
@@ -259,7 +574,7 @@ via the hook.
 
 ---
 
-## 7. First-push bootstrap
+## 9. First-push bootstrap
 
 A gate cannot validate the commit that *installs* it: enabling gates and adding
 the hook are themselves non-doc changes, so the review gate is stale for that
@@ -269,10 +584,11 @@ commit. For that one push, bypass the hook once:
 git push --no-verify
 ```
 
-Or record after committing, then push normally:
+Or record after committing, then push normally. With `require_receipt` on, this
+first commit has no receipt yet, so bypass the receipt check once:
 
 ```sh
-node .scripts/aw-gate.js record review
+node .scripts/aw-gate.js record review --no-receipt
 git push
 ```
 
@@ -280,16 +596,22 @@ After the bootstrap, the normal loop enforces every subsequent push.
 
 ---
 
-## 8. Troubleshooting
+## 10. Troubleshooting
 
 | Message from `check` | Meaning | Fix |
 | --- | --- | --- |
 | `gates disabled … skipping` (exit 0) | `gates.enabled` is not `true` | set `gates.enabled: true` |
 | `<gate>: never recorded` | no marker yet | run the skill, or `record <gate>` (first run / fresh clone — state is per-checkout and git-ignored) |
+| `no receipt at … — run the skill` (from `record`) | receipt-required gate has no fresh receipt | run the skill (it writes the receipt), or `receipt <gate> --summary "…"` then `record`; bootstrap only: `record <gate> --no-receipt` |
+| `receipt … is stale` / `is for gate "X"` (from `record`) | receipt too old or for the wrong gate | re-run the skill so it writes a fresh, correct receipt, then `record` |
 | `<gate>: stale (last run Nh ago, limit Mh)` | age-mode window exceeded | re-run the skill |
 | `<gate>: code changed in <paths> … since it last ran` | commit-mode: relevant paths changed | re-run the review/skill, then re-record |
 | `<gate>: recorded commit <sha> not found (rebased or shallow clone)` | the recorded commit is gone | re-run the skill; in CI use `fetch-depth: 0` |
 | `<gate>: invalid or missing max_age_hours` | age/`commit-and-age` gate lacks a window | add `max_age_hours` |
+| `trace disabled … skipping` | `trace.enabled` is not `true` | set `trace.enabled: true` after adopting IDs and anchors |
+| `dangling-test-ref` / `dangling-code-ref` | an anchor points at a missing requirement ID | fix the ID or add the living spec requirement |
+| `untested-requirement` | a requirement has no test anchor | add or annotate coverage, or remove stale requirement text |
+| `uncoupled-test-change` | an anchored test changed without its owning spec | update the spec or add a `Spec-Override:` trailer |
 
 The state file is **local and git-ignored**, so a fresh clone or CI checkout
 starts with every gate "never recorded". That is intended — enforcement is about
@@ -298,7 +620,7 @@ gate to what CI can verify.
 
 ---
 
-## 9. Telemetry
+## 11. Telemetry
 
 With `telemetry.enabled: true`, each `record` call also appends one JSON line to
 `telemetry.path` (default `docs/metrics/events.jsonl`):
@@ -343,7 +665,7 @@ detail lives in [../metrics/README.md](../metrics/README.md).
 
 ---
 
-## 10. Org-shared knowledge
+## 12. Org-shared knowledge
 
 Point `org_knowledge.source` at a git repo of shared learnings and standards to
 add an org-wide tier alongside the repo-local `docs/learnings/` and
@@ -374,7 +696,7 @@ The full model and templates are in [org-knowledge.md](org-knowledge.md).
 
 ---
 
-## 11. This repo's configuration (worked example)
+## 13. This repo's configuration (worked example)
 
 For reference, `docs/workflow/config.yml` in this repository enforces:
 
@@ -386,5 +708,7 @@ For reference, `docs/workflow/config.yml` in this repository enforces:
 - **No `capture` gate.** `aw-capture` still records its marker, but blocking a
   *push* on capture staleness is noise, so it is omitted from `gates.checks`.
 
-Enforcement is a husky `pre-push` hook running `node .scripts/aw-gate.js check`.
-Telemetry and org knowledge are left disabled.
+Enforcement is a husky `pre-push` hook running `node .scripts/aw-gate.js check`,
+`node .scripts/aw-gate.js trace`, and `node .scripts/aw-gate.js pin check`.
+Trace, telemetry, and org knowledge are left disabled by default; pinning is
+enabled in this repo because it carries a real self-pin.

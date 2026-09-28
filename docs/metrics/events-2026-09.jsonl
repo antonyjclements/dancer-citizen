@@ -1,0 +1,4 @@
+{"ts":"2026-09-28T20:46:37.649Z","event":"review","detail":"Scoped SNS provider migration review","source":"aw-gate"}
+{"ts":"2026-09-28T20:46:37.718Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
+{"ts":"2026-09-28T20:54:31.894Z","event":"capture","detail":"Existing durable documentation reviewed","source":"aw-gate"}
+{"ts":"2026-09-28T20:54:31.968Z","event":"synthesize","detail":null,"source":"aw-gate"}

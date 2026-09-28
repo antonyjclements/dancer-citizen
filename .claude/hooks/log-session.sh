@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Stop hook for agentic-workflow session logging.
+# Stop hook for augmented-workflow session logging.
 # Installed by aw-init into .claude/hooks/log-session.sh.
 # Fires when a Claude Code session ends and writes a session log via aw-capture session.
 set -euo pipefail
@@ -16,8 +16,8 @@ fi
 
 cd "$PROJECT_DIR"
 
-# Only run when agentic-workflow is installed in this repo.
-if [ ! -f ".agentic-workflow-version" ]; then
+# Only run when augmented-workflow is installed in this repo.
+if [ ! -f ".augmented-workflow-version" ]; then
   exit 0
 fi
 

@@ -138,3 +138,21 @@ standards:
     tags:
       - prismic
       - data-access
+  - path: docs/standards/behavior-pinning.md
+    description: Characterize existing behavior before refactoring
+    applies_to:
+      - docs/features/**
+    tags:
+      - workflow
+  - path: docs/standards/e2e-coverage.md
+    description: Select meaningful end-to-end coverage
+    applies_to:
+      - docs/features/**
+    tags:
+      - workflow
+  - path: docs/standards/traceability.md
+    description: Link acceptance criteria and verification
+    applies_to:
+      - docs/features/**
+    tags:
+      - workflow

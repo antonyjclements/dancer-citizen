@@ -1,4 +1,4 @@
-# When to Use What: Agentic Workflow Field Guide
+# When to Use What: Augmented Workflow Field Guide
 
 ## First session in any repo
 
@@ -104,6 +104,10 @@ Everything else is optional. Add specs when features get complex enough that you
 Add to the above:
 
 - `aw-brainstorm` before anything with product ambiguity — a 10-minute scope alignment now saves a week of rework later
+- When the intended human experience is uncertain, `aw-brainstorm` interprets the
+  goal and references, suggests a disposable prototype, and waits for agreement.
+  Explicit prototype requests already authorize their scope. Human feedback
+  informs the living spec; routine UI changes need no extra discovery loop.
 - `aw-create-spec` for features that touch multiple people's code
 - `aw-capture learning` after postmortems or non-obvious bugs
 - `aw-synthesize-memory` monthly, to distill session logs into team learnings
@@ -126,6 +130,7 @@ The full chain pays off here because context loss and cross-session continuity b
 - Use `aw-create-tickets` to split plans into Linear/GitHub issues so agents can pick up work independently
 - Use `aw-request-human-review` for specs and plans before implementation starts
 - Use `aw-check-workflow-compliance` before PRs on any high-risk change
+- Configure `workflow.design` hooks when a design team should participate after PRD intake, brainstorming, spec review, plan review, ticket creation, implementation review, or pre-PR acceptance
 - Configure `workflow.steps.monitor_pipeline.skill` for CI monitoring
 
 ---
@@ -136,6 +141,8 @@ The full chain pays off here because context loss and cross-session continuity b
 |------|-----|
 | Just capture decisions | `aw-capture decision` ad hoc |
 | Standardize code conventions | `aw-discover-standards` once, then reference `docs/standards/` |
+| Add design-team checkpoints | configure `workflow.design` hooks and put design references in `docs/standards/` |
+| Author e2e tests during implementation | set `e2e.enabled: true` and point `workflow.auxiliary.e2e_tests.skill` at your framework's skill |
 | Keep AI sessions continuous | `aw-capture session` at session end; `aw-synthesize-memory` monthly |
 | Structured feature development | brainstorm → spec → work → review → PR |
 | Team onboarding / cross-session wiki | `aw-synthesize-memory` → `docs/context/wiki.md` |
