@@ -1,1 +1,5 @@
+set -e
+
 node .scripts/aw-gate.js check
+node .scripts/aw-gate.js trace --base origin/main
+node .scripts/aw-gate.js pin check --base origin/main

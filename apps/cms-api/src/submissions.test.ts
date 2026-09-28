@@ -263,4 +263,46 @@ describe("createSubmission", () => {
     ]);
     expect(aws.send.mock.calls[3][0].input.ExpressionAttributeValues[":status"].S).toBe("notification_failed");
   });
+
+  // @spec:SUB-001
+  it.each([
+    ["abstract", "a".repeat(270_000)],
+    ["abstract", "💃".repeat(70_000)],
+    ["name", "é".repeat(140_000)],
+  ])("bounds oversized %s notifications without losing stored metadata", async (field, value) => {
+    aws.send.mockImplementation(async (command) => {
+      if (command.commandName === "PublishCommand" && Buffer.byteLength(command.input.Message, "utf8") > 256 * 1024) {
+        throw new Error("SNS message too large");
+      }
+      return {};
+    });
+    const response = await createSubmission(multipartEvent(requiredParts([{ name: field, value }])));
+    const commands = aws.send.mock.calls.map(([command]) => command);
+    const message = commands.find((command) => command.commandName === "PublishCommand").input.Message;
+
+    expect(response.statusCode).toBe(201);
+    expect(Buffer.byteLength(message, "utf8")).toBeLessThanOrEqual(256 * 1024);
+    expect(message).not.toContain("\ufffd");
+    expect(message).toContain(`Submission ID: ${clientSubmissionId}`);
+    expect(message).toContain("Notification shortened. Review the full submission at /admin/submissions");
+    expect(commands[0].input.Item[field].S).toBe(value);
+    expect(commands.at(-1).input.ExpressionAttributeValues[":status"].S).toBe("notified");
+  });
+
+  it.each([-1, 0, 1])("handles the SNS byte limit at offset %i", async (offset) => {
+    await createSubmission(multipartEvent(requiredParts([{ name: "abstract", value: "x" }])));
+    const baseline = aws.send.mock.calls.find(([command]) => command.commandName === "PublishCommand")?.[0].input.Message;
+    const abstract = "x".repeat(256 * 1024 - Buffer.byteLength(baseline, "utf8") + 1 + offset);
+    aws.send.mockClear();
+
+    await createSubmission(multipartEvent(requiredParts([{ name: "abstract", value: abstract }])));
+    const message = aws.send.mock.calls.find(([command]) => command.commandName === "PublishCommand")?.[0].input.Message;
+    expect(Buffer.byteLength(message, "utf8")).toBeLessThanOrEqual(256 * 1024);
+    if (offset <= 0) {
+      expect(message.endsWith(abstract)).toBe(true);
+      expect(message).not.toContain("Notification shortened");
+    } else {
+      expect(message).toContain("Notification shortened");
+    }
+  });
 });

@@ -698,17 +698,20 @@ The full model and templates are in [org-knowledge.md](org-knowledge.md).
 
 ## 13. This repo's configuration (worked example)
 
-For reference, `docs/workflow/config.yml` in this repository enforces:
+The current `docs/workflow/config.yml` enables age-based freshness checks for
+`review` and `check_workflow_compliance` (24 hours), `capture` (168 hours), and
+`synthesize` (336 hours). Each gate requires a receipt from the corresponding
+skill.
 
-- **`review` — `commit` mode**, scoped `["." , ":(exclude)docs"]`. A docs-only
-  change keeps the gate fresh; any change to skills, scripts, or the tool requires
-  a fresh review before push.
-- **`check_workflow_compliance` — `age` mode, 168h.** Compliance reflects process
-  rather than a specific diff, so a weekly window fits better than a commit gate.
-- **No `capture` gate.** `aw-capture` still records its marker, but blocking a
-  *push* on capture staleness is noise, so it is omitted from `gates.checks`.
+The Husky `pre-push` hook stops on the first failed command and runs:
 
-Enforcement is a husky `pre-push` hook running `node .scripts/aw-gate.js check`,
-`node .scripts/aw-gate.js trace`, and `node .scripts/aw-gate.js pin check`.
-Trace, telemetry, and org knowledge are left disabled by default; pinning is
-enabled in this repo because it carries a real self-pin.
+```sh
+node .scripts/aw-gate.js check
+node .scripts/aw-gate.js trace --base origin/main
+node .scripts/aw-gate.js pin check --base origin/main
+```
+
+Fetch `origin/main` before pushing so the range checks use the current PR base.
+Traceability, pinning, telemetry, and skill tracking are enabled. There are no
+behavior-pin manifests yet; pin checks enforce manifests when they are added.
+Org knowledge and end-to-end coverage gates are disabled.

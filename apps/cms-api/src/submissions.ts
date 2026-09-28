@@ -293,10 +293,21 @@ async function sendNotification(submissionId: string, fields: SubmissionFields, 
     fields.abstract || "Not provided",
   ].join("\n");
 
+  const messageBytes = Buffer.from(body, "utf8");
+  const maxMessageBytes = 256 * 1024;
+  const truncationNotice = "\n\n[Notification shortened. Review the full submission at /admin/submissions using the Submission ID above.]";
+  let message = body;
+  if (messageBytes.length > maxMessageBytes) {
+    let end = maxMessageBytes - Buffer.byteLength(truncationNotice, "utf8");
+    // Retreat to the start of a UTF-8 character rather than splitting it.
+    while ((messageBytes[end] & 0xc0) === 0x80) end -= 1;
+    message = messageBytes.subarray(0, end).toString("utf8") + truncationNotice;
+  }
+
   await sns.send(new PublishCommand({
     TopicArn: topicArn,
     Subject: "New Dancer-Citizen submission",
-    Message: body,
+    Message: message,
   }));
 }
 

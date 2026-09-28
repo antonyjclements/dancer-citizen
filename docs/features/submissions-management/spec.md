@@ -71,6 +71,7 @@ The Dancer-Citizen should accept submissions directly on the website, notify the
 - Each accepted submission publishes submission details to the configured SNS topic, with email subscriptions for the configured editorial recipients (two by default).
 - Recipients must confirm SNS subscriptions before receiving email. No SES sender identity is required.
 - Notifications include the submitter email, title, abstract, video link, and private S3 file location when supplied; a fixed subject avoids SNS subject length/control-character restrictions.
+- Notifications exceeding 256 KiB are shortened at a UTF-8 character boundary, retaining the submission ID and a notice to review the full submission in the admin interface. Stored metadata is unchanged.
 - `notified` means the publish was accepted, not inbox delivery. Missing topic configuration or publish failures record `notification_failed` without rejecting stored submissions.
 
 ### Storage and review
