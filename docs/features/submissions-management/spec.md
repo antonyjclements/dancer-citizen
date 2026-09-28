@@ -2,7 +2,7 @@
 title: Submissions Management
 status: active
 created: 2026-07-10
-updated: 2026-07-10
+updated: 2026-09-28
 tags:
   - submissions
   - aws
@@ -33,8 +33,8 @@ The Dancer-Citizen should accept submissions directly on the website, notify the
 
 - The React delivery path includes a direct submission form on `/submissions`.
 - The form posts multipart data to `/cms/submissions`.
-- The CMS API stores submission metadata in DynamoDB, stores uploaded files in S3, and sends SES notifications.
-- Notification recipients are configured by `SUBMISSION_EMAIL_TO`, with the current default of `info@dancercitizen.org,editors@dancercitizen.org`.
+- The CMS API stores submission metadata in DynamoDB, stores uploaded files in S3, and publishes plain-text SNS notifications.
+- Notification recipients are configured at CDK deployment time by `SUBMISSION_EMAIL_TO`, with the current default of `info@dancercitizen.org,editors@dancercitizen.org`.
 - The form includes a honeypot field, API Gateway throttling, and reCAPTCHA v3 verification to reduce automated spam.
 - Successful submissions route to `/submissions/thank-you` with a stable confirmation message.
 - Admin users can review submissions at `/admin/submissions`.
@@ -51,7 +51,7 @@ The Dancer-Citizen should accept submissions directly on the website, notify the
 4. The backend validates required fields and allowed attachment type/size.
 5. The backend writes submission metadata to DynamoDB.
 6. The backend stores the uploaded file in S3 when a file is attached.
-7. The backend emails the configured editorial recipients.
+7. The backend publishes to the SNS topic; SNS emails confirmed editorial subscribers.
 8. The submitter is sent to or shown a dedicated thank-you experience confirming receipt.
 
 ### Review Submissions
@@ -65,7 +65,17 @@ The Dancer-Citizen should accept submissions directly on the website, notify the
 ## Acceptance Criteria
 
 - `/submissions` keeps the submission form embedded on the Dancer-Citizen website.
-- Each accepted submission sends notification email to two or more configured recipient addresses.
+
+### SUB-001 — Submission notifications
+
+- Each accepted submission publishes submission details to the configured SNS topic, with email subscriptions for the configured editorial recipients (two by default).
+- Recipients must confirm SNS subscriptions before receiving email. No SES sender identity is required.
+- Notifications include the submitter email, title, abstract, video link, and private S3 file location when supplied; a fixed subject avoids SNS subject length/control-character restrictions.
+- Notifications exceeding 256 KiB are shortened at a UTF-8 character boundary, retaining the submission ID and a notice to review the full submission in the admin interface. Stored metadata is unchanged.
+- `notified` means the publish was accepted, not inbox delivery. Missing topic configuration or publish failures record `notification_failed` without rejecting stored submissions.
+
+### Storage and review
+
 - Each accepted submission writes structured metadata to DynamoDB.
 - Each accepted submission with an attachment stores the file in S3.
 - The backend records enough status information to distinguish received, file-stored, notified, notification-failed, and file-failed states.

@@ -8,7 +8,8 @@ import * as integrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
-import * as iam from "aws-cdk-lib/aws-iam";
+import * as sns from "aws-cdk-lib/aws-sns";
+import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as nodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as s3 from "aws-cdk-lib/aws-s3";
@@ -48,6 +49,20 @@ export class DancerCitizenWebStack extends cdk.Stack {
       removalPolicy: RemovalPolicy.RETAIN,
     });
 
+    const notificationTopic = new sns.Topic(this, "SubmissionNotifications", {
+      displayName: "Dancer-Citizen submissions",
+    });
+    const notificationRecipients = new Set(
+      (process.env.SUBMISSION_EMAIL_TO || "info@dancercitizen.org,editors@dancercitizen.org")
+        .split(",").map((email) => email.trim()).filter(Boolean),
+    );
+    if (notificationRecipients.size === 0) {
+      throw new Error("SUBMISSION_EMAIL_TO must contain at least one recipient");
+    }
+    for (const email of notificationRecipients) {
+      notificationTopic.addSubscription(new subscriptions.EmailSubscription(email));
+    }
+
     const apiFunction = new nodejs.NodejsFunction(this, "CmsApiFunction", {
       entry: path.join(root, "apps/cms-api/src/handler.ts"),
       handler: "handler",
@@ -62,8 +77,7 @@ export class DancerCitizenWebStack extends cdk.Stack {
       },
       environment: {
         PRISMIC_REPOSITORY_NAME: "dancercitizen",
-        SUBMISSION_EMAIL_FROM: process.env.SUBMISSION_EMAIL_FROM || "info@dancercitizen.org",
-        SUBMISSION_EMAIL_TO: process.env.SUBMISSION_EMAIL_TO || "info@dancercitizen.org,editors@dancercitizen.org",
+        SUBMISSION_NOTIFICATION_TOPIC_ARN: notificationTopic.topicArn,
         SUBMISSION_FILES_BUCKET: submissionFilesBucket.bucketName,
         SUBMISSION_RECAPTCHA_ACTION: process.env.SUBMISSION_RECAPTCHA_ACTION || "submission",
         SUBMISSION_RECAPTCHA_MIN_SCORE: process.env.SUBMISSION_RECAPTCHA_MIN_SCORE || "0.5",
@@ -79,10 +93,7 @@ export class DancerCitizenWebStack extends cdk.Stack {
     submissionFilesBucket.grantDelete(apiFunction);
     submissionFilesBucket.grantRead(apiFunction);
     submissionsTable.grantReadWriteData(apiFunction);
-    apiFunction.addToRolePolicy(new iam.PolicyStatement({
-      actions: ["ses:SendEmail", "ses:SendRawEmail"],
-      resources: ["*"],
-    }));
+    notificationTopic.grantPublish(apiFunction);
 
     const htmlFunction = new nodejs.NodejsFunction(this, "HtmlShellFunction", {
       entry: path.join(root, "apps/cms-api/src/html-shell.ts"),
@@ -232,6 +243,7 @@ export class DancerCitizenWebStack extends cdk.Stack {
     new cdk.CfnOutput(this, "CloudFrontUrl", { value: `https://${distribution.distributionDomainName}` });
     new cdk.CfnOutput(this, "CmsApiUrl", { value: httpApi.apiEndpoint });
     new cdk.CfnOutput(this, "SubmissionFilesBucketName", { value: submissionFilesBucket.bucketName });
+    new cdk.CfnOutput(this, "SubmissionNotificationTopicArn", { value: notificationTopic.topicArn });
     new cdk.CfnOutput(this, "SubmissionsTableName", { value: submissionsTable.tableName });
   }
 }

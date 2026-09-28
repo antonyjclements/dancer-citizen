@@ -15,7 +15,6 @@ const navLinks = [
   { href: "/editors-staff", label: "Editors / Staff" },
   { href: "/submissions", label: "Submissions" },
   { href: "/contributors", label: "Contributors" },
-  { href: "/in-the-moment", label: "In the Moment" },
   { href: "/support-us", label: "Support Us" },
 ];
 

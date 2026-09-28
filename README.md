@@ -26,7 +26,7 @@ This starts the CMS API and React app in one terminal with colored log prefixes.
 
 The CMS API reads Prismic directly. `PRISMIC_REPOSITORY_NAME` defaults to `dancercitizen`, so no local environment variable is required for the default repository.
 
-The Submissions page posts multipart form data to `/cms/submissions`. In AWS, submissions are written to DynamoDB, uploaded files are stored in S3, and notification emails are sent through SES to `info@dancercitizen.org` and `editors@dancercitizen.org`. The form accepts PDF, DOC, DOCX, RTF, and TXT attachments. The API includes a honeypot field, API Gateway throttling, and reCAPTCHA verification to reduce automated spam.
+The Submissions page posts multipart form data to `/cms/submissions`. In AWS, submissions are written to DynamoDB, uploaded files are stored in S3, and notification emails are sent through SNS to `info@dancercitizen.org` and `editors@dancercitizen.org`. The form accepts PDF, DOC, DOCX, RTF, and TXT attachments. The API includes a honeypot field, API Gateway throttling, and reCAPTCHA verification to reduce automated spam.
 
 Local successful submission testing requires AWS credentials plus the deployed resource environment variables. For local form work without reCAPTCHA keys, run the CMS API with `SUBMISSION_RECAPTCHA_DISABLED=true`; do not use that setting in production.
 
@@ -73,8 +73,8 @@ Optional environment variables:
 
 - `SITE_URL`: public site origin used for canonical and CORS values. Defaults to `https://dancercitizen.org`.
 - `PRISMIC_REPOSITORY_NAME`: defaults to `dancercitizen` in the Lambda code.
-- `SUBMISSION_EMAIL_FROM`: SES sender address for submission notifications. Defaults to `info@dancercitizen.org`; this identity must be verified in SES.
-- `SUBMISSION_EMAIL_TO`: comma-separated notification recipients. Defaults to `info@dancercitizen.org,editors@dancercitizen.org`.
+- `SUBMISSION_NOTIFICATION_TOPIC_ARN`: required by the API to publish notifications; CDK supplies this automatically. For local API testing against AWS, set it to the deployed topic ARN.
+- `SUBMISSION_EMAIL_TO`: comma-separated SNS email subscribers, read by CDK at deployment time. Defaults to `info@dancercitizen.org,editors@dancercitizen.org`.
 - `SUBMISSION_RECAPTCHA_SECRET`: reCAPTCHA secret key used by the CMS API to verify submission tokens.
 - `SUBMISSION_RECAPTCHA_ACTION`: expected reCAPTCHA v3 action. Defaults to `submission`.
 - `SUBMISSION_RECAPTCHA_MIN_SCORE`: minimum accepted reCAPTCHA v3 score. Defaults to `0.5`.
@@ -87,4 +87,8 @@ Optional environment variables:
 - `SUBMISSIONS_ADMIN_SESSION_TTL_SECONDS`: optional admin session lifetime. Defaults to 8 hours.
 - `SUBMISSION_DOWNLOAD_URL_TTL_SECONDS`: optional signed S3 download URL lifetime. Defaults to 5 minutes.
 
-CDK outputs the CloudFront URL, CMS API URL, submission files bucket, and submissions table after deployment.
+CDK outputs the CloudFront URL, CMS API URL, submission files bucket, submissions table, and notification topic ARN after deployment.
+
+After deployment, each recipient must click **Confirm subscription** in the email from Amazon SNS before notifications can arrive. Confirm both default addresses (or all configured replacements), then send a test submission and verify receipt in every inbox. Changing `SUBMISSION_EMAIL_TO` requires another deployment and confirmation by new subscribers. No SES identity verification or sandbox exit is needed; `SUBMISSION_EMAIL_FROM` is no longer used. SNS sends plain-text notifications with an AWS-managed sender and unsubscribe link. Notifications over 256 KiB are shortened safely and include a notice directing editors to the full stored submission at `/admin/submissions`; contact the submitter using the email address in the message body. For shared mailing lists, protect against accidental group unsubscription using [AWS's subscription guidance](https://docs.aws.amazon.com/sns/latest/dg/sns-email-notifications.html).
+
+A stored `notified` status means SNS accepted the publish, not that each inbox received it; unconfirmed or unsubscribed recipients will not receive messages. Publish/configuration failures remain `notification_failed` without rejecting an otherwise stored submission. SNS has usage-based charges beyond applicable free allowances; see [SNS pricing](https://aws.amazon.com/sns/pricing/).

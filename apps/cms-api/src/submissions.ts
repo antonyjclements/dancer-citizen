@@ -1,7 +1,7 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from "aws-lambda";
 import { DynamoDBClient, PutItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { SendEmailCommand, SESClient } from "@aws-sdk/client-ses";
+import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { randomUUID } from "node:crypto";
 import { jsonResponse } from "./http";
 
@@ -37,7 +37,7 @@ type StoredFile = {
 
 const dynamo = new DynamoDBClient({});
 const s3 = new S3Client({});
-const ses = new SESClient({});
+const sns = new SNSClient({});
 
 const maxFileBytes = Number(process.env.SUBMISSION_MAX_FILE_BYTES || 8 * 1024 * 1024);
 const allowedExtensions = new Set([".doc", ".docx", ".pdf", ".rtf", ".txt"]);
@@ -77,16 +77,6 @@ async function verifyRecaptcha(token: string, remoteIp: string | undefined): Pro
 
 function text(part: MultipartPart | undefined): string {
   return part?.body.toString("utf8").trim() ?? "";
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (character) => {
-    if (character === "&") return "&amp;";
-    if (character === "<") return "&lt;";
-    if (character === ">") return "&gt;";
-    if (character === "\"") return "&quot;";
-    return "&#39;";
-  });
 }
 
 function safeFilename(value: string): string {
@@ -282,12 +272,10 @@ async function updateRecord(submissionId: string, file: StoredFile, status: "sto
   }));
 }
 
+// @spec SUB-001
 async function sendNotification(submissionId: string, fields: SubmissionFields, file: StoredFile, submittedAt: string) {
-  const source = process.env.SUBMISSION_EMAIL_FROM || "info@dancercitizen.org";
-  const destinations = (process.env.SUBMISSION_EMAIL_TO || "info@dancercitizen.org,editors@dancercitizen.org")
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter(Boolean);
+  const topicArn = process.env.SUBMISSION_NOTIFICATION_TOPIC_ARN;
+  if (!topicArn) throw new Error("SUBMISSION_NOTIFICATION_TOPIC_ARN is not configured");
   const fileLine = file ? `${file.filename} (${file.size} bytes) stored at s3://${file.bucket}/${file.key}` : "No file attached.";
   const body = [
     `A new Dancer-Citizen submission was received.`,
@@ -305,30 +293,21 @@ async function sendNotification(submissionId: string, fields: SubmissionFields, 
     fields.abstract || "Not provided",
   ].join("\n");
 
-  await ses.send(new SendEmailCommand({
-    Source: source,
-    Destination: { ToAddresses: destinations },
-    Message: {
-      Subject: { Data: `New Issue 20 submission: ${fields.title}` },
-      Body: {
-        Text: { Data: body },
-        Html: {
-          Data: `<p>A new Dancer-Citizen submission was received.</p>
-            <dl>
-              <dt>Submission ID</dt><dd>${escapeHtml(submissionId)}</dd>
-              <dt>Submitted</dt><dd>${escapeHtml(submittedAt)}</dd>
-              <dt>Name</dt><dd>${escapeHtml(fields.name)}</dd>
-              <dt>Email</dt><dd>${escapeHtml(fields.email)}</dd>
-              <dt>Date</dt><dd>${escapeHtml([fields.dateMonth, fields.dateDay, fields.dateYear].filter(Boolean).join("/"))}</dd>
-              <dt>Title of Work</dt><dd>${escapeHtml(fields.title)}</dd>
-              <dt>Link to Video</dt><dd>${escapeHtml(fields.videoUrl || "Not provided")}</dd>
-              <dt>File</dt><dd>${escapeHtml(fileLine)}</dd>
-            </dl>
-            <h2>Abstract</h2>
-            <p>${escapeHtml(fields.abstract || "Not provided")}</p>`,
-        },
-      },
-    },
+  const messageBytes = Buffer.from(body, "utf8");
+  const maxMessageBytes = 256 * 1024;
+  const truncationNotice = "\n\n[Notification shortened. Review the full submission at /admin/submissions using the Submission ID above.]";
+  let message = body;
+  if (messageBytes.length > maxMessageBytes) {
+    let end = maxMessageBytes - Buffer.byteLength(truncationNotice, "utf8");
+    // Retreat to the start of a UTF-8 character rather than splitting it.
+    while ((messageBytes[end] & 0xc0) === 0x80) end -= 1;
+    message = messageBytes.subarray(0, end).toString("utf8") + truncationNotice;
+  }
+
+  await sns.send(new PublishCommand({
+    TopicArn: topicArn,
+    Subject: "New Dancer-Citizen submission",
+    Message: message,
   }));
 }
 
