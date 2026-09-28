@@ -45,10 +45,10 @@ vi.mock("@aws-sdk/client-s3", () => ({
   },
 }));
 
-vi.mock("@aws-sdk/client-ses", () => ({
-  SESClient: vi.fn(() => ({ send: aws.send })),
-  SendEmailCommand: class {
-    readonly commandName = "SendEmailCommand";
+vi.mock("@aws-sdk/client-sns", () => ({
+  SNSClient: vi.fn(() => ({ send: aws.send })),
+  PublishCommand: class {
+    readonly commandName = "PublishCommand";
     readonly input: any;
 
     constructor(input: any) {
@@ -132,8 +132,7 @@ describe("createSubmission", () => {
     aws.send.mockResolvedValue({});
     process.env.SUBMISSION_FILES_BUCKET = "submission-files";
     process.env.SUBMISSIONS_TABLE_NAME = "submissions";
-    process.env.SUBMISSION_EMAIL_FROM = "info@dancercitizen.org";
-    process.env.SUBMISSION_EMAIL_TO = "info@dancercitizen.org,editors@dancercitizen.org";
+    process.env.SUBMISSION_NOTIFICATION_TOPIC_ARN = "arn:aws:sns:us-east-1:123456789012:submissions";
     process.env.SUBMISSION_RECAPTCHA_SECRET = "recaptcha-secret";
     process.env.SUBMISSION_RECAPTCHA_ACTION = "submission";
     process.env.SUBMISSION_RECAPTCHA_MIN_SCORE = "0.5";
@@ -142,6 +141,7 @@ describe("createSubmission", () => {
     })));
   });
 
+  // @spec:SUB-001
   it("stores a valid submission, uploads the file, and sends notification email", async () => {
     const response = await createSubmission(multipartEvent(requiredParts([
       { name: "abstract", value: "A short abstract." },
@@ -155,9 +155,18 @@ describe("createSubmission", () => {
       "PutItemCommand",
       "PutObjectCommand",
       "UpdateItemCommand",
-      "SendEmailCommand",
+      "PublishCommand",
       "UpdateItemCommand",
     ]);
+    expect(aws.send.mock.calls[3][0].input).toMatchObject({
+      TopicArn: process.env.SUBMISSION_NOTIFICATION_TOPIC_ARN,
+      Subject: "New Dancer-Citizen submission",
+      Message: expect.stringContaining("Email: ada@example.com"),
+    });
+    expect(aws.send.mock.calls[3][0].input.Message).toContain("Title of Work: Dancing Systems");
+    expect(aws.send.mock.calls[3][0].input.Message).toContain("A short abstract.");
+    expect(aws.send.mock.calls[3][0].input.Message).toContain(`s3://submission-files/submissions/${clientSubmissionId}/paper.pdf`);
+    expect(aws.send.mock.calls[4][0].input.ExpressionAttributeValues[":status"].S).toBe("notified");
     expect(aws.send.mock.calls[1][0].input).toMatchObject({
       Bucket: "submission-files",
       Key: `submissions/${clientSubmissionId}/paper.pdf`,
@@ -218,9 +227,28 @@ describe("createSubmission", () => {
     expect(aws.send).not.toHaveBeenCalled();
   });
 
+  it("preserves submissions and records a failure when the SNS topic is missing", async () => {
+    delete process.env.SUBMISSION_NOTIFICATION_TOPIC_ARN;
+    const response = await createSubmission(multipartEvent(requiredParts()));
+    expect(response.statusCode).toBe(201);
+    expect(aws.send.mock.calls.map(([command]) => command.commandName)).toEqual([
+      "PutItemCommand", "UpdateItemCommand", "UpdateItemCommand",
+    ]);
+    expect(aws.send.mock.calls[2][0].input.ExpressionAttributeValues[":status"].S).toBe("notification_failed");
+    expect(aws.send.mock.calls[2][0].input.ExpressionAttributeValues[":error"].S).toContain("SUBMISSION_NOTIFICATION_TOPIC_ARN");
+  });
+
+  it("keeps long multiline titles in the body rather than the restricted SNS subject", async () => {
+    const title = "A long title\n".repeat(30).trim();
+    await createSubmission(multipartEvent(requiredParts([{ name: "title", value: title }])));
+    const notification = aws.send.mock.calls.find(([command]) => command.commandName === "PublishCommand")?.[0].input;
+    expect(notification.Subject).toBe("New Dancer-Citizen submission");
+    expect(notification.Message).toContain(title);
+  });
+
   it("records notification failures without failing the accepted submission", async () => {
     aws.send.mockImplementation(async (command: { commandName: string }) => {
-      if (command.commandName === "SendEmailCommand") throw new Error("SES unavailable");
+      if (command.commandName === "PublishCommand") throw new Error("SNS unavailable");
       return {};
     });
 
@@ -230,7 +258,7 @@ describe("createSubmission", () => {
     expect(aws.send.mock.calls.map(([command]) => command.commandName)).toEqual([
       "PutItemCommand",
       "UpdateItemCommand",
-      "SendEmailCommand",
+      "PublishCommand",
       "UpdateItemCommand",
     ]);
     expect(aws.send.mock.calls[3][0].input.ExpressionAttributeValues[":status"].S).toBe("notification_failed");
