@@ -314,7 +314,6 @@ img { max-width: 100%; display: block; }
 
 .biography-card > img {
   width: 100%;
-  aspect-ratio: 1;
   object-fit: cover;
   background: var(--paper-deep);
 }

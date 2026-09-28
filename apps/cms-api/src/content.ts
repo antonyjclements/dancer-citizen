@@ -162,11 +162,6 @@ function linkedSupportDonationBody(): RichTextField {
   return [{ type: "paragraph", text: "Donate", spans: [{ type: "hyperlink", start: 0, end: 6, data: { link_type: "Web", target: "_blank", url: "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UUTLCCFNSRGWC" } }] }] as RichTextField;
 }
 
-function richTextText(slice: any): string {
-  if (slice.slice_type !== "RichTextSection") return "";
-  return (slice.primary?.body ?? []).map((node: any) => node.text ?? "").join("\n");
-}
-
 function linkPlainUrlNodes(field: RichTextField | undefined): RichTextField | undefined {
   return field?.map((node: any) => {
     if (typeof node.text !== "string" || node.spans?.length) return node;
@@ -226,10 +221,10 @@ function normalizeEditorsStaffPage(page: AnyDocument): AnyDocument {
   const jane = biographyItemByNamePrefix(biographyItems, "jane alexandre");
   const julie = biographyItemByNamePrefix(biographyItems, "julie b. johnson");
   const current = [
-    jane ? { ...jane, inMemoriam: true } : null,
     julie ? { ...julie } : null,
     biographyItemByNamePrefix(biographyItems, "erica moshman"),
     biographyItemByNamePrefix(biographyItems, "emily metzner"),
+    jane ? { ...jane, inMemoriam: true } : null,
   ].filter(Boolean);
   const past = ["takiyah nur amin", "saroya corbett", "laura jones", "jsk", "christiana mcleod horn"]
     .flatMap((name) => {
@@ -261,17 +256,6 @@ function normalizeEditorsStaffPage(page: AnyDocument): AnyDocument {
 }
 
 export function normalizeContentPage(page: AnyDocument): AnyDocument {
-  if (page.uid === "submissions") {
-    const body = page.data.body ?? [];
-    const currentCall = body.find((slice: any) => richTextText(slice).includes("We are now accepting submissions for Issue 20"));
-    const licensing = body.find((slice: any) => richTextText(slice).includes("The Dancer-Citizen supports the Creative Commons option"));
-    const normalized = [currentCall, licensing].filter(Boolean).map((slice: any) => {
-      if (slice === licensing) return { ...slice, primary: { ...slice.primary, body: (slice.primary.body ?? []).filter((node: any) => !node.text?.startsWith("This work is licensed under CC BY-NC-ND 4.0")) } };
-      return slice;
-    });
-    return { ...page, data: { ...page.data, body: normalized } };
-  }
-
   if (page.uid === "support-us") {
     return {
       ...page,

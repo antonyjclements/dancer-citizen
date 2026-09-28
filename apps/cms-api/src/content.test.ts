@@ -278,7 +278,7 @@ describe("content normalization", () => {
     expect(normalized.data.body[0].primary.body[0].spans[0].data.target).toBe("_blank");
   });
 
-  it("filters submissions to the current call and licensing copy", () => {
+  it("keeps submissions page body editable from Prismic", () => {
     const normalized = normalizeContentPage(doc({
       uid: "submissions",
       data: {
@@ -291,9 +291,9 @@ describe("content normalization", () => {
       },
     }));
 
-    expect(normalized.data.body).toHaveLength(2);
-    expect(JSON.stringify(normalized.data.body)).not.toContain("Old Issue 15 copy");
-    expect(JSON.stringify(normalized.data.body)).not.toContain("Fill out my online form");
+    expect(normalized.data.body).toHaveLength(4);
+    expect(JSON.stringify(normalized.data.body)).toContain("Old Issue 15 copy");
+    expect(JSON.stringify(normalized.data.body)).toContain("Fill out my online form");
   });
 
   it("links plain imported URL labels on content pages", () => {
@@ -340,12 +340,12 @@ describe("content normalization", () => {
       undefined,
     ]);
     expect(normalized.data.body[0].items.map((item: any) => item.name)).toEqual([
-      "Jane Alexandre, PhD",
       "Julie B. Johnson, PhD",
       "Erica Moshman",
       "Emily Metzner",
+      "Jane Alexandre, PhD",
     ]);
-    expect(normalized.data.body[0].items[0].inMemoriam).toBe(true);
+    expect(normalized.data.body[0].items[3].inMemoriam).toBe(true);
     expect(normalized.data.body[1].items.map((item: any) => item.name)).toContain("Takiyah Nur Amin, Ph.D.");
     expect(normalized.data.body[2].items.map((item: any) => item.name)).toEqual(["Kimberly Binns", "Carly Knudson"]);
   });

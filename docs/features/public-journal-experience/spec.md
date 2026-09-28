@@ -52,7 +52,7 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - Prismic images render with non-empty alt text from the image field when available, falling back to nearby captions, credits, or titles.
 - Content pages render a header and then the Prismic body through `SliceZone`.
 - Contributor list slices decode imported legacy title-link payloads into readable contributor names, same-page anchors, issue labels, and inline `read more` links.
-- The `/submissions` content page filters imported historical call-for-submissions slices down to the current public submissions copy, direct submission form, and Creative Commons/licensing copy.
+- The `/submissions` content page renders its Prismic-managed body copy directly so content editors can update public submission guidance without code changes; the direct submission form is appended by the React page.
 - The `/support-us` content page converts the imported PayPal donation text into a button-style external link that opens in a new tab.
 - Journal summaries normalize title, subtitle, issue number, publication date, and href for table-of-contents links.
 - The home page brand headline should keep "The Dancer-Citizen" on one line when the viewport has enough width to support it without overflow.
@@ -104,9 +104,9 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - `/[uid]` displays the requested content page header and body slices.
 - `/about` renders imported links as clickable anchors.
 - `/contributors` displays contributor names and issue labels without exposing imported legacy JSON field payloads.
-- `/submissions` does not display superseded Issue 15, Issue 19, or closed Issue 20 call text when the current live-page copy and submission form are available.
+- `/submissions` renders the CMS-authored page body and the direct submission form without code-level filtering of historical call-for-submissions copy.
 - `/support-us` displays the PayPal donation call to action as a button with `target="_blank"`.
-- `/editors-staff` lists Jane Alexandre, Julie B. Johnson, Erica Moshman, and Emily Metzner before other people, in that order; Jane Alexandre is marked "In Memoriam".
+- `/editors-staff` lists Julie B. Johnson, Erica Moshman, Emily Metzner, and Jane Alexandre before other people, in that order; Jane Alexandre is marked "In Memoriam".
 - `/editors-staff` groups Takiyah Nur Amin, Saroya Corbett, Laura Jones, jsk, and Christiana McLeod Horn under "Past Editors".
 - `/editors-staff` groups Kimberly Binns and Carly Knudson under "Moving the Map".
 - `/in-the-moment` can show a clear pending-content state until editorial content is supplied.

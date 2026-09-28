@@ -85,7 +85,7 @@ export function SubmissionForm() {
 
   return (
     <section className="submission-form-section" aria-labelledby="submission-form-heading">
-      <h2 id="submission-form-heading">Issue 20 Submission Form</h2>
+      <h2 id="submission-form-heading">Issue 21 Submission Form</h2>
       <form className="submission-form" onSubmit={onSubmit}>
         <input name="clientSubmissionId" type="hidden" value={clientSubmissionId} />
         <input name="recaptchaToken" type="hidden" value="" />
