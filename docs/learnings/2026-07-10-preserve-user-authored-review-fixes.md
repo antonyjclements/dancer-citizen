@@ -6,7 +6,8 @@ trigger: correction
 status: tentative
 evidence-count: 1
 unconfirmed-runs: 0
-derived-from: []
+derived-from:
+  - 2026-07-11-public-site-submissions-editors-session
 tags:
   - review
   - workflow

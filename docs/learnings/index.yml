@@ -13,3 +13,9 @@ learnings:
       - review
       - workflow
       - specs
+  - title: Recognize tsx Sandbox IPC Failures
+    path: docs/learnings/2026-09-28-tsx-sandbox-ipc.md
+    status: active
+  - title: Preserve API Route Precedence
+    path: docs/learnings/2026-09-28-preserve-api-route-precedence.md
+    status: tentative
