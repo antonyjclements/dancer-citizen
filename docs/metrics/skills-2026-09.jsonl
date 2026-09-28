@@ -4,3 +4,5 @@
 {"ts":"2026-09-28T20:53:07.531Z","session_id":"85f22151-93a5-4228-9be7-063742629b85","skill":"aw-commit","source":"skill","workflow_step":"commit"}
 {"ts":"2026-09-28T20:53:32.122Z","session_id":"85f22151-93a5-4228-9be7-063742629b85","skill":"aw-capture","source":"skill"}
 {"ts":"2026-09-28T20:53:32.148Z","session_id":"85f22151-93a5-4228-9be7-063742629b85","skill":"aw-synthesize-memory","source":"skill"}
+{"ts":"2026-09-28T21:25:35.363Z","session_id":"85f22151-93a5-4228-9be7-063742629b85","skill":"aw-commit-push-pr","source":"skill","workflow_step":"commit_push_pr"}
+{"ts":"2026-09-28T21:26:15.423Z","session_id":"85f22151-93a5-4228-9be7-063742629b85","skill":"aw-check-workflow-compliance","source":"skill","workflow_step":"check_workflow_compliance"}
