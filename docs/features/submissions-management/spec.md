@@ -9,6 +9,7 @@ tags:
   - admin
   - public-site
 related_decisions:
+  - docs/decisions/2026-09-28-use-cognito-for-submissions-admin.md
   - docs/decisions/2026-06-19-use-react-lambda-bff-for-aws-delivery.md
   - docs/decisions/2026-07-10-use-simple-admin-auth-for-submissions.md
 related_standards:
@@ -38,8 +39,8 @@ The Dancer-Citizen should accept submissions directly on the website, notify the
 - The form includes a honeypot field, API Gateway throttling, and reCAPTCHA v3 verification to reduce automated spam.
 - Successful submissions route to `/submissions/thank-you` with a stable confirmation message.
 - Admin users can review submissions at `/admin/submissions`.
-- The first admin release uses a single environment-configured admin username/password hash, with AWS Cognito deferred until the editorial workflow needs managed users.
-- Admin sessions use an HTTP-only signed cookie and admin downloads use short-lived signed S3 URLs so the submission files bucket remains private.
+- Admin authentication uses a dedicated AWS Cognito user pool with public registration disabled and one shared editorial account. First login supports setting a new password.
+- Admin sessions use an HTTP-only, Secure, SameSite=Lax cookie with a one-hour Cognito access token and admin downloads use short-lived signed S3 URLs so the submission files bucket remains private.
 
 ## Key Flows
 
@@ -57,10 +58,11 @@ The Dancer-Citizen should accept submissions directly on the website, notify the
 ### Review Submissions
 
 1. Admin user opens a protected admin route.
-2. Admin user enters the configured admin username and password.
+2. Admin user signs in using the shared Cognito account, changing a temporary password when required.
 3. Admin user sees a list of submissions with status, submitted date, name, email, title, and attachment availability.
-4. Admin user opens a submission detail view to read metadata and abstract.
-5. Admin user downloads the attached file through a secure, time-limited download URL or equivalent protected file handoff.
+4. Admin user searches name, email, title and abstract with case-insensitive literal matching, continuing through batches until all records have been searched. Loaded results are sorted newest first.
+5. Admin user opens a submission detail view to read metadata and abstract.
+6. Admin user downloads the attached file through a secure, time-limited download URL or equivalent protected file handoff.
 
 ## Acceptance Criteria
 
@@ -82,7 +84,10 @@ The Dancer-Citizen should accept submissions directly on the website, notify the
 - The public form rejects missing required fields, invalid email addresses, invalid video URLs, unsupported attachment types, oversized files, and missing certification.
 - The public form has stronger bot protection than a honeypot alone before launch, using the selected CAPTCHA or managed bot-protection provider.
 - Successful submission leads to a thank-you page or dedicated thank-you state with a stable confirmation message.
-- Admin routes are not publicly accessible without authentication.
+- Admin submission data and downloads require a valid Cognito access token for the configured pool and client and an active Cognito user; the login shell is public.
+- Search reaches records beyond the first 100 through continuation batches, including when a batch has no matches.
+- Logout clears this browser session and displayed submission data without signing out other editors using the shared account.
+- Admin responses are never cached; expired sessions return the user to login.
 - Admin users can list submissions, inspect a submission, and download attached files without making the S3 bucket public.
 - Admin file downloads use protected access, such as signed S3 URLs, rather than exposing raw public bucket objects.
 - Local validation and unit tests cover successful submissions, validation failures, bot-protection failure, duplicate client submission IDs, notification failure behavior, and admin authorization failures.
@@ -98,11 +103,10 @@ The Dancer-Citizen should accept submissions directly on the website, notify the
 ## Open Questions / TODOs
 
 - Blocking before launch: What are the final two recipient email addresses for submission notifications?
-- Deferred: Upgrade admin authentication to AWS Cognito when the editorial workflow needs managed users, password resets, or multiple role-bearing accounts.
-- Deferred: Should the admin list support search, filtering, CSV export, or status labels beyond the stored backend status?
-- Deferred: Should the thank-you page be a real route such as `/submissions/thank-you`, or is an in-page confirmation acceptable for launch?
+- Deferred: CSV export, status/date filters, individual editorial accounts and roles.
 
 ## Decision Links
 
 - [Use React and Lambda BFF for AWS Delivery](../../decisions/2026-06-19-use-react-lambda-bff-for-aws-delivery.md)
 - [Use Simple Admin Auth for Submissions](../../decisions/2026-07-10-use-simple-admin-auth-for-submissions.md)
+- [Use Cognito for Submissions Admin](../../decisions/2026-09-28-use-cognito-for-submissions-admin.md)

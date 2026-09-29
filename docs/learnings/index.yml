@@ -1,4 +1,11 @@
 learnings:
+  - path: docs/learnings/2026-09-28-check-upstream-before-infrastructure-work.md
+    title: Check Upstream Before Infrastructure Work
+    scope: repo
+    tags:
+      - aws
+      - git
+      - deployment
   - path: docs/learnings/2026-06-19-avoid-repeating-localhost-verification-failures.md
     title: Avoid Repeating Localhost Verification Failures
     scope: repo

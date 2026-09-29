@@ -9,11 +9,13 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.1142.0",
     "@aws-sdk/client-dynamodb": "^3.1075.0",
     "@aws-sdk/client-s3": "^3.1075.0",
     "@aws-sdk/client-sns": "^3.1075.0",
     "@aws-sdk/s3-request-presigner": "^3.1085.0",
-    "@prismicio/client": "^7.21.8"
+    "@prismicio/client": "^7.21.8",
+    "aws-jwt-verify": "^5.2.1"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.149",

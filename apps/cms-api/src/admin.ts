@@ -2,7 +2,8 @@ import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from "
 import { GetItemCommand, ScanCommand, type AttributeValue, DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { createHmac, createHash, timingSafeEqual } from "node:crypto";
+import { CognitoIdentityProviderClient, GetUserCommand, InitiateAuthCommand, RespondToAuthChallengeCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { CognitoJwtVerifier } from "aws-jwt-verify";
 import { jsonResponse } from "./http";
 
 type SubmissionListItem = {
@@ -30,33 +31,23 @@ type SubmissionDetail = SubmissionListItem & {
 const dynamo = new DynamoDBClient({});
 const s3 = new S3Client({});
 const sessionCookieName = "dc_admin_session";
-const sessionTtlSeconds = Number(process.env.SUBMISSIONS_ADMIN_SESSION_TTL_SECONDS || 60 * 60 * 8);
+const cognito = new CognitoIdentityProviderClient({});
+let verifier: ReturnType<typeof CognitoJwtVerifier.create> | undefined;
+let verifierConfig = "";
 const signedUrlTtlSeconds = Number(process.env.SUBMISSION_DOWNLOAD_URL_TTL_SECONDS || 60 * 5);
 
 function noStoreHeaders(extra: Record<string, string> = {}) {
   return { "cache-control": "no-store", ...extra };
 }
 
-function adminConfig() {
-  return {
-    username: process.env.SUBMISSIONS_ADMIN_USERNAME,
-    passwordHash: process.env.SUBMISSIONS_ADMIN_PASSWORD_HASH,
-    sessionSecret: process.env.SUBMISSIONS_ADMIN_SESSION_SECRET,
-    tableName: process.env.SUBMISSIONS_TABLE_NAME,
-  };
-}
-
 function assertAdminConfig() {
-  const config = adminConfig();
-  if (!config.username || !config.passwordHash || !config.sessionSecret || !config.tableName) {
+  const userPoolId = process.env.SUBMISSIONS_ADMIN_USER_POOL_ID;
+  const clientId = process.env.SUBMISSIONS_ADMIN_CLIENT_ID;
+  const tableName = process.env.SUBMISSIONS_TABLE_NAME;
+  if (!userPoolId || !clientId || !tableName) {
     throw new Error("Admin submissions configuration is missing");
   }
-  return config as {
-    username: string;
-    passwordHash: string;
-    sessionSecret: string;
-    tableName: string;
-  };
+  return { userPoolId, clientId, tableName };
 }
 
 function text(value: AttributeValue | undefined): string {
@@ -109,47 +100,9 @@ function detailItem(item: Record<string, AttributeValue>): SubmissionDetail {
   };
 }
 
-function base64url(value: Buffer | string) {
-  return Buffer.from(value).toString("base64url");
-}
-
-function sign(value: string, secret: string) {
-  return createHmac("sha256", secret).update(value).digest("base64url");
-}
-
 function sessionCookie(token: string, maxAgeSeconds: number) {
   const secure = process.env.SUBMISSIONS_ADMIN_COOKIE_SECURE === "false" ? "" : "; Secure";
   return `${sessionCookieName}=${token}; Path=/; HttpOnly; SameSite=Lax${secure}; Max-Age=${maxAgeSeconds}`;
-}
-
-function hashPassword(password: string) {
-  return `sha256:${createHash("sha256").update(password).digest("hex")}`;
-}
-
-function timingSafeTextEqual(left: string, right: string) {
-  const leftBuffer = Buffer.from(left);
-  const rightBuffer = Buffer.from(right);
-  if (leftBuffer.length !== rightBuffer.length) {
-    timingSafeEqual(leftBuffer, leftBuffer);
-    return false;
-  }
-  return timingSafeEqual(leftBuffer, rightBuffer);
-}
-
-function validCredentials(username: string, password: string) {
-  const config = assertAdminConfig();
-  return timingSafeTextEqual(username, config.username) &&
-    timingSafeTextEqual(hashPassword(password), config.passwordHash);
-}
-
-function createSessionToken() {
-  const config = assertAdminConfig();
-  const payload = base64url(JSON.stringify({
-    sub: config.username,
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + sessionTtlSeconds,
-  }));
-  return `${payload}.${sign(payload, config.sessionSecret)}`;
 }
 
 function cookieValue(event: APIGatewayProxyEventV2, name: string) {
@@ -158,70 +111,133 @@ function cookieValue(event: APIGatewayProxyEventV2, name: string) {
   return match?.slice(name.length + 1);
 }
 
-function isAuthorized(event: APIGatewayProxyEventV2) {
-  const config = assertAdminConfig();
+export async function requireAdmin(event: APIGatewayProxyEventV2) {
+  const { userPoolId, clientId } = assertAdminConfig();
   const token = cookieValue(event, sessionCookieName);
-  const [payload, signature] = token?.split(".") ?? [];
-
-  if (!payload || !signature) return false;
-  if (!timingSafeTextEqual(sign(payload, config.sessionSecret), signature)) return false;
-
+  if (!token) return false;
+  const configKey = `${userPoolId}:${clientId}`;
+  if (!verifier || verifierConfig !== configKey) {
+    verifier = CognitoJwtVerifier.create({ userPoolId, clientId, tokenUse: "access" });
+    verifierConfig = configKey;
+  }
   try {
-    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { sub?: string; exp?: number };
-    return parsed.sub === config.username && typeof parsed.exp === "number" && parsed.exp > Math.floor(Date.now() / 1000);
+    await verifier.verify(token);
   } catch {
     return false;
+  }
+  // Cognito checks revocation and disabled accounts, beyond local JWT validation.
+  try {
+    await cognito.send(new GetUserCommand({ AccessToken: token }));
+    return true;
+  } catch (error) {
+    if (error instanceof Error && ["NotAuthorizedException", "UserNotFoundException"].includes(error.name)) return false;
+    throw error;
   }
 }
 
 function unauthorized() {
-  return jsonResponse(401, { error: "Unauthorized" }, noStoreHeaders());
+  return jsonResponse(401, { error: "Sign in to access submissions." }, noStoreHeaders());
 }
 
-function parseJsonBody(event: APIGatewayProxyEventV2) {
-  if (!event.body) return {};
-  const value = event.isBase64Encoded ? Buffer.from(event.body, "base64").toString("utf8") : event.body;
-  return JSON.parse(value);
+function validJsonRequest(event: APIGatewayProxyEventV2) {
+  const contentType = event.headers["content-type"] || event.headers["Content-Type"] || "";
+  // JSON forces a CORS preflight; Fetch Metadata also rejects cross-site browser posts.
+  return contentType.split(";")[0].trim().toLowerCase() === "application/json" &&
+    event.headers["sec-fetch-site"] !== "cross-site";
 }
 
 export async function loginAdmin(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> {
-  const body = parseJsonBody(event) as { username?: string; password?: string };
-
-  if (!validCredentials(body.username ?? "", body.password ?? "")) {
-    return unauthorized();
+  if (!validJsonRequest(event)) return jsonResponse(400, { error: "Invalid login request." }, noStoreHeaders());
+  const { clientId } = assertAdminConfig();
+  let body: Record<string, unknown>;
+  try {
+    const parsed = JSON.parse(event.isBase64Encoded ? Buffer.from(event.body || "", "base64").toString("utf8") : event.body || "");
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("Invalid body");
+    body = parsed;
+  } catch {
+    return jsonResponse(400, { error: "Invalid login request." }, noStoreHeaders());
   }
-
-  const token = createSessionToken();
-  return {
-    ...jsonResponse(200, { ok: true }, noStoreHeaders()),
-    cookies: [sessionCookie(token, sessionTtlSeconds)],
-  };
+  const { username, password, session, newPassword } = body;
+  if (typeof username !== "string" || !username || username.length > 128 ||
+      (session === undefined ? typeof password !== "string" || !password || password.length > 256 :
+        typeof session !== "string" || !session || session.length > 4096 || typeof newPassword !== "string" || !newPassword || newPassword.length > 256)) {
+    return jsonResponse(400, { error: "Enter a username and password." }, noStoreHeaders());
+  }
+  try {
+    const result = session === undefined
+      ? await cognito.send(new InitiateAuthCommand({
+        ClientId: clientId, AuthFlow: "USER_PASSWORD_AUTH",
+        AuthParameters: { USERNAME: username, PASSWORD: password as string },
+      }))
+      : await cognito.send(new RespondToAuthChallengeCommand({
+        ClientId: clientId, ChallengeName: "NEW_PASSWORD_REQUIRED", Session: session as string,
+        ChallengeResponses: { USERNAME: username, NEW_PASSWORD: newPassword as string },
+      }));
+    if (result.ChallengeName === "NEW_PASSWORD_REQUIRED" && result.Session) {
+      return jsonResponse(200, {
+        challenge: "NEW_PASSWORD_REQUIRED", session: result.Session,
+        username: result.ChallengeParameters?.USER_ID_FOR_SRP || username,
+      }, noStoreHeaders());
+    }
+    const auth = result.AuthenticationResult;
+    if (!auth?.AccessToken || !auth.ExpiresIn) {
+      return jsonResponse(409, { error: "This account requires additional setup. Contact the site maintainer." }, noStoreHeaders());
+    }
+    return {
+      ...jsonResponse(200, { ok: true }, noStoreHeaders()),
+      cookies: [sessionCookie(auth.AccessToken, Math.min(auth.ExpiresIn, 3600))],
+    };
+  } catch (error) {
+    const name = error instanceof Error ? error.name : "";
+    if (["NotAuthorizedException", "UserNotFoundException", "UserNotConfirmedException", "PasswordResetRequiredException", "CodeMismatchException", "ExpiredCodeException"].includes(name)) {
+      return jsonResponse(401, { error: "Unable to sign in. Check your credentials or contact the site maintainer." }, noStoreHeaders());
+    }
+    if (["InvalidPasswordException", "InvalidParameterException"].includes(name)) {
+      return jsonResponse(400, { error: "Password must have at least 12 characters, uppercase and lowercase letters, a number and a symbol. Restart sign-in if your setup session expired." }, noStoreHeaders());
+    }
+    if (name === "TooManyRequestsException") return jsonResponse(429, { error: "Too many attempts. Try again shortly." }, noStoreHeaders());
+    throw error;
+  }
 }
 
-export function logoutAdmin(): APIGatewayProxyStructuredResultV2 {
+export function logoutAdmin(event: APIGatewayProxyEventV2): APIGatewayProxyStructuredResultV2 {
+  if (!validJsonRequest(event)) return jsonResponse(400, { error: "Invalid logout request." }, noStoreHeaders());
   return {
     ...jsonResponse(200, { ok: true }, noStoreHeaders()),
     cookies: [sessionCookie("", 0)],
   };
 }
 
-export function requireAdmin(event: APIGatewayProxyEventV2) {
-  return isAuthorized(event);
-}
-
 export async function listSubmissions(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> {
-  if (!requireAdmin(event)) return unauthorized();
+  if (!await requireAdmin(event)) return unauthorized();
 
   const config = assertAdminConfig();
+  const query = (event.queryStringParameters?.q || "").trim().toLowerCase();
+  const cursor = event.queryStringParameters?.cursor;
+  if (query.length > 200) return jsonResponse(400, { error: "Search must be at most 200 characters." }, noStoreHeaders());
+  let startKey: Record<string, AttributeValue> | undefined;
+  if (cursor) {
+    try {
+      if (cursor.length > 4096 || !/^[A-Za-z0-9_-]+$/.test(cursor)) throw new Error("Invalid cursor");
+      const id: unknown = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
+      if (typeof id !== "string" || !id || Buffer.byteLength(id) > 2048) throw new Error("Invalid cursor");
+      startKey = { submissionId: { S: id } };
+    } catch {
+      return jsonResponse(400, { error: "Invalid continuation cursor." }, noStoreHeaders());
+    }
+  }
   const result = await dynamo.send(new ScanCommand({
     TableName: config.tableName,
     Limit: 100,
+    ExclusiveStartKey: startKey,
   }));
   const submissions = (result.Items ?? [])
+    .filter((item) => !query || [item.name, item.email, item.title, item.abstract].some((value) => text(value).toLowerCase().includes(query)))
     .map(listItem)
     .sort((left, right) => right.submittedAt.localeCompare(left.submittedAt));
-
-  return jsonResponse(200, { submissions }, noStoreHeaders());
+  const lastId = text(result.LastEvaluatedKey?.submissionId);
+  const nextCursor = lastId ? Buffer.from(JSON.stringify(lastId)).toString("base64url") : null;
+  return jsonResponse(200, { submissions, nextCursor }, noStoreHeaders());
 }
 
 async function getSubmission(submissionId: string) {
@@ -234,7 +250,7 @@ async function getSubmission(submissionId: string) {
 }
 
 export async function getSubmissionDetail(event: APIGatewayProxyEventV2, submissionId: string): Promise<APIGatewayProxyStructuredResultV2> {
-  if (!requireAdmin(event)) return unauthorized();
+  if (!await requireAdmin(event)) return unauthorized();
 
   const item = await getSubmission(submissionId);
   if (!item) return jsonResponse(404, { error: "Submission not found" }, noStoreHeaders());
@@ -243,7 +259,7 @@ export async function getSubmissionDetail(event: APIGatewayProxyEventV2, submiss
 }
 
 export async function getSubmissionDownload(event: APIGatewayProxyEventV2, submissionId: string): Promise<APIGatewayProxyStructuredResultV2> {
-  if (!requireAdmin(event)) return unauthorized();
+  if (!await requireAdmin(event)) return unauthorized();
 
   const item = await getSubmission(submissionId);
   if (!item) return jsonResponse(404, { error: "Submission not found" }, noStoreHeaders());
