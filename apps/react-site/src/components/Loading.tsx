@@ -1,6 +1,7 @@
-export function Loading() {
+export function Loading({ embedded = false }: { embedded?: boolean }) {
+  const Container = embedded ? "div" : "main";
   return (
-    <main className="loading-page" aria-busy="true" aria-label="Loading page content">
+    <Container className={embedded ? "loading-page loading-embedded" : "loading-page"} aria-busy="true" aria-label="Loading page content">
       <section className="loading-hero" aria-hidden="true">
         <div className="skeleton skeleton-kicker" />
         <div className="skeleton skeleton-title" />
@@ -16,6 +17,6 @@ export function Loading() {
           <div className="skeleton-card" />
         </div>
       </section>
-    </main>
+    </Container>
   );
 }

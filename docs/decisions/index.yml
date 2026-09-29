@@ -1,4 +1,13 @@
 decisions:
+  - path: docs/decisions/2026-09-28-use-cognito-for-submissions-admin.md
+    title: Use Cognito for Submissions Admin
+    date: 2026-09-28
+    status: active
+    tags:
+      - submissions
+      - admin
+      - security
+      - aws
   - path: docs/decisions/2026-07-11-remove-legacy-next-runtime.md
     title: Remove Legacy Next Runtime
     date: 2026-07-11

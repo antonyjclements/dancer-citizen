@@ -70,7 +70,7 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
     }
 
     if (resource === "admin" && uid === "logout" && method === "POST") {
-      return logoutAdmin();
+      return logoutAdmin(event);
     }
 
     if (resource === "admin" && uid === "submissions" && method === "GET" && !parts[cmsIndex + 2]) {

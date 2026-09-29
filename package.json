@@ -17,6 +17,7 @@
     "test:api": "npm run test -w @dancer-citizen/cms-api",
     "cdk:synth": "npm run synth -w @dancer-citizen/infra",
     "build": "npm run build:react && npm run build:api",
+    "deploy": "npm run build && npm run deploy -w @dancer-citizen/infra -- --profile antonyjclements",
     "lint": "eslint",
     "prepare": "husky"
   },

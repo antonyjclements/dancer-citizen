@@ -80,11 +80,8 @@ Optional environment variables:
 - `SUBMISSION_RECAPTCHA_MIN_SCORE`: minimum accepted reCAPTCHA v3 score. Defaults to `0.5`.
 - `VITE_RECAPTCHA_SITE_KEY`: reCAPTCHA site key used by the React submission form at build time.
 - `VITE_RECAPTCHA_ACTION`: reCAPTCHA v3 action used by the React submission form at build time. Defaults to `submission`.
-- `SUBMISSIONS_ADMIN_USERNAME`: admin username for `/admin/submissions`.
-- `SUBMISSIONS_ADMIN_PASSWORD_HASH`: SHA-256 admin password hash in `sha256:<hex>` format. Generate one locally with `node -e "const {createHash}=require('node:crypto'); console.log('sha256:'+createHash('sha256').update(process.argv[1]).digest('hex'))" 'your-password'`.
-- `SUBMISSIONS_ADMIN_SESSION_SECRET`: random secret used to sign admin session cookies.
+- `SUBMISSIONS_ADMIN_USER_POOL_ID` and `SUBMISSIONS_ADMIN_CLIENT_ID`: supplied automatically by CDK; set them from stack outputs when running the API locally.
 - `SUBMISSIONS_ADMIN_COOKIE_SECURE`: defaults to `true`; set to `false` only for local HTTP testing.
-- `SUBMISSIONS_ADMIN_SESSION_TTL_SECONDS`: optional admin session lifetime. Defaults to 8 hours.
 - `SUBMISSION_DOWNLOAD_URL_TTL_SECONDS`: optional signed S3 download URL lifetime. Defaults to 5 minutes.
 
 CDK outputs the CloudFront URL, CMS API URL, submission files bucket, submissions table, and notification topic ARN after deployment.
@@ -92,3 +89,19 @@ CDK outputs the CloudFront URL, CMS API URL, submission files bucket, submission
 After deployment, each recipient must click **Confirm subscription** in the email from Amazon SNS before notifications can arrive. Confirm both default addresses (or all configured replacements), then send a test submission and verify receipt in every inbox. Changing `SUBMISSION_EMAIL_TO` requires another deployment and confirmation by new subscribers. No SES identity verification or sandbox exit is needed; `SUBMISSION_EMAIL_FROM` is no longer used. SNS sends plain-text notifications with an AWS-managed sender and unsubscribe link. Notifications over 256 KiB are shortened safely and include a notice directing editors to the full stored submission at `/admin/submissions`; contact the submitter using the email address in the message body. For shared mailing lists, protect against accidental group unsubscription using [AWS's subscription guidance](https://docs.aws.amazon.com/sns/latest/dg/sns-email-notifications.html).
 
 A stored `notified` status means SNS accepted the publish, not that each inbox received it; unconfirmed or unsubscribed recipients will not receive messages. Publish/configuration failures remain `notification_failed` without rejecting an otherwise stored submission. SNS has usage-based charges beyond applicable free allowances; see [SNS pricing](https://aws.amazon.com/sns/pricing/).
+
+## Submissions admin
+
+Open `/admin/submissions` to browse submissions, search names/email addresses/titles/abstracts, view details and download private attachments. Search is case-insensitive literal matching. Each request scans up to 100 records; use **Load next 100 records** or **Search next 100 records** until the page reports that all records have been searched. A batch can have no matches while more records remain. Loaded results are sorted newest first, but older batches can contain newer submissions because DynamoDB scans are unordered.
+
+CDK creates a dedicated Cognito user pool, an app client and one shared `editor` user, with self-registration disabled and no invitation email. The stack outputs `SubmissionsAdminUserPoolId`, `SubmissionsAdminClientId` and `SubmissionsAdminUsername`. No password is committed, synthesized or returned in stack outputs.
+
+After deployment, set a temporary password for `editor` in the AWS Cognito console (select the output user pool, then the user, then **Set password**). Use at least 12 characters with uppercase, lowercase, a number and a symbol. Sign in at `/admin/submissions` with that temporary password; the app prompts for a new password. Share the final credential with editors using your password manager. If the temporary password expires, set another through Cognito. An operator can also use the AWS CLI `admin-set-user-password` operation with securely supplied input; avoid putting real passwords into shell history.
+
+The API validates Cognito access tokens for the configured pool/client and checks account validity before list, detail and download requests. Sessions expire after one hour and require signing in again. **Sign out** clears this browser's cookie; it deliberately does not globally sign out other editors using the same account. To revoke shared access, disable the user or use Cognito's admin global sign-out, then rotate the password. Previously issued S3 links remain valid for their short expiry window. Password recovery is handled by the site maintainer for this shared account.
+
+Deploying this change invalidates the former custom admin sessions. The old `SUBMISSIONS_ADMIN_USERNAME`, `SUBMISSIONS_ADMIN_PASSWORD_HASH`, `SUBMISSIONS_ADMIN_SESSION_SECRET` and session-TTL settings are no longer used. Existing DynamoDB records and private S3 files are preserved.
+
+For local admin use, configure `AWS_REGION`, AWS credentials for the existing submission resources, `SUBMISSIONS_TABLE_NAME`, the two Cognito identifiers above, and `SUBMISSIONS_ADMIN_COOKIE_SECURE=false`. Use the React dev server's `/cms` proxy. Local authentication still uses the configured Cognito pool; there is no development auth bypass.
+
+After deployment verify invalid login, temporary-password setup, successful login, searching through all batches, detail/download access, sign-out, and unauthenticated API rejection. Unit tests mock AWS; they do not replace a deployed Cognito smoke test.

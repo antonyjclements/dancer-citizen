@@ -78,10 +78,16 @@ export type AdminSubmissionDetail = AdminSubmissionListItem & {
 
 const apiBase = import.meta.env.VITE_CMS_API_BASE || "/cms";
 
+export class ApiError extends Error {
+  constructor(public readonly status: number, message: string) {
+    super(message);
+  }
+}
+
 export async function getJson<T>(path: string): Promise<T> {
   const response = await fetch(`${apiBase}${path}`, { credentials: "include" });
   if (response.status === 404) throw new Error("not-found");
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+  if (!response.ok) throw new ApiError(response.status, `Request failed: ${response.status}`);
   return response.json() as Promise<T>;
 }
 
@@ -111,14 +117,19 @@ export async function postJson<T>(path: string, body: unknown): Promise<T> {
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(typeof payload.error === "string" ? payload.error : `Request failed: ${response.status}`);
+    throw new ApiError(response.status, typeof payload.error === "string" ? payload.error : `Request failed: ${response.status}`);
   }
 
   return payload as T;
 }
 
-export async function getAdminSubmissions(): Promise<{ submissions: AdminSubmissionListItem[] }> {
-  return getJson<{ submissions: AdminSubmissionListItem[] }>("/admin/submissions");
+export type AdminSubmissionsResult = { submissions: AdminSubmissionListItem[]; nextCursor: string | null };
+export type AdminLoginResult = { ok: true } | { challenge: "NEW_PASSWORD_REQUIRED"; session: string; username: string };
+
+export async function getAdminSubmissions(query = "", cursor?: string): Promise<AdminSubmissionsResult> {
+  const params = new URLSearchParams({ q: query });
+  if (cursor) params.set("cursor", cursor);
+  return getJson<AdminSubmissionsResult>(`/admin/submissions?${params}`);
 }
 
 export async function getAdminSubmission(submissionId: string): Promise<{ submission: AdminSubmissionDetail }> {
