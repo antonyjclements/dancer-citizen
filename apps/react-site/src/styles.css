@@ -140,6 +140,34 @@ img { max-width: 100%; display: block; }
   margin-bottom: 16px;
 }
 
+.issue-hero {
+  padding-block: clamp(32px, 5vw, 72px);
+}
+
+.issue-hero-with-image {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(28px, 4vw, 64px);
+}
+
+.issue-hero-image {
+  width: 100%;
+  height: auto;
+  max-height: 560px;
+  object-fit: contain;
+}
+
+.issue-hero-copy {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.issue-hero h1 {
+  font-size: clamp(36px, 5vw, 76px);
+  line-height: 1.08;
+}
+
 .latest {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 520px);
@@ -823,7 +851,7 @@ blockquote {
 }
 
 @media (max-width: 760px) {
-  .latest, .site-footer, .not-found {
+  .latest, .site-footer, .not-found, .issue-hero-with-image {
     grid-template-columns: 1fr;
   }
 

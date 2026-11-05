@@ -2,7 +2,7 @@
 title: Public Journal Experience
 status: active
 created: 2026-05-25
-updated: 2026-07-11
+updated: 2026-11-05
 tags:
   - journal
   - prismic
@@ -39,6 +39,7 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - General content pages live at `/[uid]` and are fetched by UID from Prismic.
 - Missing Prismic documents for issue, article, or content pages call `notFound()`.
 - Issue pages render an issue hero, non-legacy issue body slices, a generated table of contents, and previous/next issue navigation.
+- Issue headers display the same normalized thumbnail as the home page, with the image beside the title on desktop and above it on mobile. Titles and dates remain on a solid background, separate from the image.
 - Issue page `LinkedTiles` body slices are treated as imported legacy table-of-contents placeholders and are not rendered directly; when present, their linked document order drives the generated public TOC.
 - If an issue has no `LinkedTiles` body slice, table of contents entries come from article/content documents tagged with the formatted issue tag for the current issue number.
 - The issue table of contents excludes `issue_page` documents and orders entries by first publication date ascending.
@@ -118,6 +119,14 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - Prismic reads go through the shared client and page-level reads stay in feature data loaders.
 - The React delivery path preserves article-specific social metadata without falling back to a generic SPA `index.html`.
 - The React delivery path redirects legacy issue and issue-article URLs to their current public route shape.
+
+### ISSUE-001 — Issue headers display readable cover imagery
+
+- `/issues/[uid]` displays the home page issue thumbnail (`tile_thumbnail`, falling back to `hero_image`) when available, preserving its aspect ratio and normalized alt text.
+- The image appears above the publication date and title on mobile and beside them on desktop; text stays on a solid background without overlapping the image.
+- Long issue titles wrap without horizontal overflow at narrow mobile widths.
+- Issues without an image retain their date and title without an empty image placeholder.
+- The issue body, table of contents, and previous/next issue links remain available below the header.
 
 ## Boundaries and Non-Goals
 
