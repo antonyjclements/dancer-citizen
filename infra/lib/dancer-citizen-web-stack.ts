@@ -8,6 +8,7 @@ import * as acm from "aws-cdk-lib/aws-certificatemanager";
 import * as integrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
+import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as sns from "aws-cdk-lib/aws-sns";
 import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions";
@@ -75,6 +76,28 @@ export class DancerCitizenWebStack extends cdk.Stack {
       notificationTopic.addSubscription(new subscriptions.EmailSubscription(email));
     }
 
+    const adminPool = staging ? undefined : new cognito.UserPool(this, "SubmissionsAdminPool", {
+      selfSignUpEnabled: false,
+      signInAliases: { username: true },
+      passwordPolicy: { minLength: 12, requireLowercase: true, requireUppercase: true, requireDigits: true, requireSymbols: true },
+      accountRecovery: cognito.AccountRecovery.NONE,
+      removalPolicy: RemovalPolicy.RETAIN,
+    });
+    const adminClient = adminPool?.addClient("SubmissionsAdminClient", {
+      authFlows: { userPassword: true },
+      generateSecret: false,
+      preventUserExistenceErrors: true,
+      enableTokenRevocation: true,
+      accessTokenValidity: Duration.hours(1),
+      idTokenValidity: Duration.hours(1),
+      refreshTokenValidity: Duration.days(1),
+    });
+    if (adminPool) new cognito.CfnUserPoolUser(this, "SharedSubmissionsEditor", {
+      userPoolId: adminPool.userPoolId,
+      username: "editor",
+      messageAction: "SUPPRESS",
+    });
+
     const apiFunction = new nodejs.NodejsFunction(this, "CmsApiFunction", {
       entry: path.join(root, "apps/cms-api/src/handler.ts"),
       handler: "handler",
@@ -97,9 +120,10 @@ export class DancerCitizenWebStack extends cdk.Stack {
         SUBMISSION_RECAPTCHA_SECRET: staging ? "" : process.env.SUBMISSION_RECAPTCHA_SECRET || "",
         SUBMISSIONS_TABLE_NAME: submissionsTable.tableName,
         SUBMISSIONS_ADMIN_COOKIE_SECURE: staging ? "true" : process.env.SUBMISSIONS_ADMIN_COOKIE_SECURE || "true",
-        SUBMISSIONS_ADMIN_PASSWORD_HASH: staging ? "" : process.env.SUBMISSIONS_ADMIN_PASSWORD_HASH || "",
-        SUBMISSIONS_ADMIN_SESSION_SECRET: staging ? "" : process.env.SUBMISSIONS_ADMIN_SESSION_SECRET || "",
-        SUBMISSIONS_ADMIN_USERNAME: staging ? "" : process.env.SUBMISSIONS_ADMIN_USERNAME || "",
+        ...(adminPool && adminClient ? {
+          SUBMISSIONS_ADMIN_USER_POOL_ID: adminPool.userPoolId,
+          SUBMISSIONS_ADMIN_CLIENT_ID: adminClient.userPoolClientId,
+        } : {}),
       },
     });
     submissionFilesBucket.grantPut(apiFunction);
@@ -275,6 +299,11 @@ export class DancerCitizenWebStack extends cdk.Stack {
       });
     }
 
+    if (adminPool && adminClient) {
+      new cdk.CfnOutput(this, "SubmissionsAdminUserPoolId", { value: adminPool.userPoolId });
+      new cdk.CfnOutput(this, "SubmissionsAdminClientId", { value: adminClient.userPoolClientId });
+      new cdk.CfnOutput(this, "SubmissionsAdminUsername", { value: "editor" });
+    }
     new cdk.CfnOutput(this, "CloudFrontUrl", { value: `https://${distribution.distributionDomainName}` });
     if (staging) {
       new cdk.CfnOutput(this, "StagingSiteUrl", { value: deployment.domain ? deployment.siteUrl : `https://${distribution.distributionDomainName}` });

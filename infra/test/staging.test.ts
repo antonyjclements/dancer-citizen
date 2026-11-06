@@ -89,13 +89,18 @@ describe("staging infrastructure and builds", () => {
     template.resourceCountIs("AWS::SNS::Topic", 1);
     template.resourceCountIs("AWS::SNS::Subscription", 0);
     template.resourceCountIs("AWS::S3::Bucket", 2);
+    template.resourceCountIs("AWS::Cognito::UserPool", 0);
+    template.resourceCountIs("AWS::Cognito::UserPoolClient", 0);
+    template.resourceCountIs("AWS::Cognito::UserPoolUser", 0);
     template.hasResourceProperties("AWS::Lambda::Function", {
       Environment: { Variables: Match.objectLike({
         SITE_ENVIRONMENT: "staging",
         PRISMIC_REPOSITORY_NAME: "dancercitizen",
-        SUBMISSIONS_ADMIN_PASSWORD_HASH: "",
-        SUBMISSIONS_ADMIN_SESSION_SECRET: "",
-        SUBMISSIONS_ADMIN_USERNAME: "",
+        SUBMISSIONS_ADMIN_PASSWORD_HASH: Match.absent(),
+        SUBMISSIONS_ADMIN_SESSION_SECRET: Match.absent(),
+        SUBMISSIONS_ADMIN_USERNAME: Match.absent(),
+        SUBMISSIONS_ADMIN_USER_POOL_ID: Match.absent(),
+        SUBMISSIONS_ADMIN_CLIENT_ID: Match.absent(),
         SUBMISSION_RECAPTCHA_SECRET: "",
       }) },
     });
@@ -172,6 +177,9 @@ describe("production compatibility", () => {
     template.resourceCountIs("AWS::CloudFront::ResponseHeadersPolicy", 0);
     template.resourceCountIs("AWS::Route53::RecordSet", 0);
     template.resourceCountIs("AWS::SNS::Subscription", 2);
+    template.resourceCountIs("AWS::Cognito::UserPool", 1);
+    template.resourceCountIs("AWS::Cognito::UserPoolClient", 1);
+    template.resourceCountIs("AWS::Cognito::UserPoolUser", 1);
     template.hasResourceProperties("AWS::SNS::Subscription", { Protocol: "email", Endpoint: "info@dancercitizen.org" });
     const distribution = Object.values(template.findResources("AWS::CloudFront::Distribution"))[0].Properties.DistributionConfig;
     assert.equal(distribution.Aliases, undefined);

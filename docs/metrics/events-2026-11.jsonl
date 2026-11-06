@@ -10,3 +10,8 @@
 {"ts":"2026-11-05T18:46:30.488Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
 {"ts":"2026-11-06T01:41:26.527Z","event":"review","detail":"Scoped local Hide-toggle review; unrelated pre-existing changes excluded","source":"aw-gate"}
 {"ts":"2026-11-06T01:41:26.772Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
+{"ts":"2026-11-05T19:01:23.140Z","event":"review","detail":"scoped release review","source":"aw-gate"}
+{"ts":"2026-11-05T19:01:23.224Z","event":"capture","detail":"no-op","source":"aw-gate"}
+{"ts":"2026-11-05T19:01:23.307Z","event":"synthesize","detail":null,"source":"aw-gate"}
+{"ts":"2026-11-05T19:03:58.045Z","event":"review","detail":"final scoped code and regression review","source":"aw-gate"}
+{"ts":"2026-11-05T19:03:58.131Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
