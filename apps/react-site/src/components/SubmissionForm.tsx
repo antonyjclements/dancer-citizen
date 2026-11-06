@@ -64,6 +64,7 @@ export function SubmissionForm() {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (import.meta.env.MODE === "staging") return;
     const form = event.currentTarget;
 
     if (!form.reportValidity()) return;
@@ -86,6 +87,7 @@ export function SubmissionForm() {
   return (
     <section className="submission-form-section" aria-labelledby="submission-form-heading">
       <h2 id="submission-form-heading">Issue 21 Submission Form</h2>
+      {import.meta.env.MODE === "staging" && <p>Submissions are disabled on this staging site.</p>}
       <form className="submission-form" onSubmit={onSubmit}>
         <input name="clientSubmissionId" type="hidden" value={clientSubmissionId} />
         <input name="recaptchaToken" type="hidden" value="" />
@@ -151,7 +153,7 @@ export function SubmissionForm() {
           <span>I certify that this paper is not under review elsewhere <strong aria-hidden="true">*</strong></span>
         </label>
 
-        <button type="submit" disabled={state.status === "submitting"}>
+        <button type="submit" disabled={import.meta.env.MODE === "staging" || state.status === "submitting"}>
           {state.status === "submitting" ? "Submitting..." : "Submit"}
         </button>
 

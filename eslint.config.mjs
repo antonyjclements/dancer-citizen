@@ -4,8 +4,10 @@ import tseslint from "typescript-eslint";
 const eslintConfig = defineConfig([
   globalIgnores([
     "build/**",
+    ".worktrees/**",
     ".scripts/**",
     "apps/**/dist/**",
+    "apps/**/dist-staging/**",
     "infra/cdk.out/**",
   ]),
   ...tseslint.configs.recommended,

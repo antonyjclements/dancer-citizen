@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "synth": "cdk synth",
+    "test": "node --import tsx --test test/*.test.ts",
     "deploy": "cdk deploy"
   },
   "dependencies": {

@@ -53,7 +53,7 @@ Rules:
 
 ## Where the Decision Is Made
 
-Mark requirements at spec time — in `aw-create-spec` or `aw-brainstorm`, as the acceptance criterion is written — and settle disagreements at spec review, where changing your mind is free.
+Mark requirements at spec time — in `aw-spec`, as the acceptance criterion is written — and settle disagreements at spec review, where changing your mind is free.
 
 Do not mark at implementation time. A bar set by whoever is writing code that day, under deadline, produces either nothing or everything.
 

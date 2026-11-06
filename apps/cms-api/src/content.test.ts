@@ -311,42 +311,76 @@ describe("content normalization", () => {
     expect(normalized.data.body[0].primary.body[0].spans[0].data.url).toBe("https://example.com/archive");
   });
 
-  it("groups editors and staff into editorial sections", () => {
+// @spec:BIO-001, BIO-002, EDITORS-001
+  it("preserves CMS headings, list positions, and biography order on editors and staff", () => {
     const normalized = normalizeContentPage(doc({
       uid: "editors-staff",
       data: {
         body: [{
           slice_type: "BiographyList",
+          primary: { heading: "Past Editors" },
           items: [
             { name: "Carly Knudson" },
             { name: "Jane Alexandre, PhD" },
             { name: "Takiyah Nur Amin, Ph.D." },
-            { name: "Emily Metzner" },
-            { name: "Julie B. Johnson, PhD" },
-            { name: "Kimberly Binns" },
-            { name: "Erica Moshman" },
           ],
         }, {
           slice_type: "RichTextSection",
           primary: { body: [{ text: "Guest Editors" }] },
+        }, {
+          slice_type: "BiographyList",
+          primary: { heading: "Editors" },
+          items: [
+            { name: "New Editor" },
+            { name: "Emily Metzner" },
+            { name: "Julie B. Johnson, PhD" },
+            { name: "Erica Moshman" },
+          ],
         }],
       },
     }));
 
     expect(normalized.data.body.map((slice: any) => slice.primary.heading)).toEqual([
-      "Editors",
       "Past Editors",
-      "Moving the Map",
       undefined,
+      "Editors",
     ]);
     expect(normalized.data.body[0].items.map((item: any) => item.name)).toEqual([
-      "Julie B. Johnson, PhD",
-      "Erica Moshman",
-      "Emily Metzner",
+      "Carly Knudson",
       "Jane Alexandre, PhD",
+      "Takiyah Nur Amin, Ph.D.",
     ]);
-    expect(normalized.data.body[0].items[3].inMemoriam).toBe(true);
-    expect(normalized.data.body[1].items.map((item: any) => item.name)).toContain("Takiyah Nur Amin, Ph.D.");
-    expect(normalized.data.body[2].items.map((item: any) => item.name)).toEqual(["Kimberly Binns", "Carly Knudson"]);
+    expect(normalized.data.body[0].items[1]).toEqual({ name: "Jane Alexandre, PhD", inMemoriam: true });
+    expect(normalized.data.body[1].primary.body).toEqual([{ text: "Guest Editors" }]);
+    expect(normalized.data.body[2].items).toEqual([
+      { name: "New Editor" },
+      { name: "Emily Metzner" },
+      { name: "Julie B. Johnson, PhD" },
+      { name: "Erica Moshman" },
+    ]);
+  });
+
+// @spec:BIO-003
+  it("preserves existing single lists, duplicate names, and biography content", () => {
+    const item = { name: "Unlisted Editor", summary: [{ type: "paragraph", text: "Biography" }], linked_article: { id: "article-1" }, image: { url: "https://example.com/photo.jpg" } };
+    const page = doc({ uid: "editors-staff", data: { body: [{
+      id: "original-list",
+      slice_type: "BiographyList",
+      primary: { heading: "Our Team" },
+      items: [item, { ...item, summary: [] }],
+    }] } });
+
+    expect(normalizeContentPage(page)).toEqual(page);
+  });
+
+// @spec:BIO-003
+  it("handles biography lists with missing headings or empty items without generating sections", () => {
+    const page = doc({ uid: "editors-staff", data: { body: [
+      { slice_type: "BiographyList", items: [{ name: "Editor" }] },
+      { slice_type: "BiographyList", primary: { heading: "Future Editors" }, items: [] },
+      { slice_type: "BiographyList", primary: { heading: "Another List" } },
+    ] } });
+
+    expect(normalizeContentPage(page)).toEqual(page);
   });
 });

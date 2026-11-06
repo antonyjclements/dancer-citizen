@@ -641,6 +641,9 @@ export type AllDocumentTypes =
  * Primary content in *BiographyList → Default → Primary*
  */
 export interface BiographyListSliceDefaultPrimary {
+  /** Hide this component on the frontend. Defaults to false. */
+  hide: prismic.BooleanField;
+
   /**
    * Heading field in *BiographyList → Default → Primary*
    *
@@ -731,6 +734,9 @@ export type BiographyListSlice = prismic.SharedSlice<
  * Primary content in *ContributorList → Default → Primary*
  */
 export interface ContributorListSliceDefaultPrimary {
+  /** Hide this component on the frontend. Defaults to false. */
+  hide: prismic.BooleanField;
+
   /**
    * Heading field in *ContributorList → Default → Primary*
    *
@@ -841,6 +847,9 @@ export type ContributorListSlice = prismic.SharedSlice<
  * Primary content in *FileLink → Default → Primary*
  */
 export interface FileLinkSliceDefaultPrimary {
+  /** Hide this component on the frontend. Defaults to false. */
+  hide: prismic.BooleanField;
+
   /**
    * Title field in *FileLink → Default → Primary*
    *
@@ -906,6 +915,9 @@ export type FileLinkSlice = prismic.SharedSlice<
  * Primary content in *FormEmbed → Default → Primary*
  */
 export interface FormEmbedSliceDefaultPrimary {
+  /** Hide this component on the frontend. Defaults to false. */
+  hide: prismic.BooleanField;
+
   /**
    * Title field in *FormEmbed → Default → Primary*
    *
@@ -961,6 +973,9 @@ export type FormEmbedSlice = prismic.SharedSlice<
  * Primary content in *Gallery → Default → Primary*
  */
 export interface GallerySliceDefaultPrimary {
+  /** Hide this component on the frontend. Defaults to false. */
+  hide: prismic.BooleanField;
+
   /**
    * Heading field in *Gallery → Default → Primary*
    *
@@ -1051,6 +1066,9 @@ export type GallerySlice = prismic.SharedSlice<
  * Primary content in *Image → Default → Primary*
  */
 export interface ImageSliceDefaultPrimary {
+  /** Hide this component on the frontend. Defaults to false. */
+  hide: prismic.BooleanField;
+
   /**
    * Image field in *Image → Default → Primary*
    *
@@ -1123,6 +1141,9 @@ export type ImageSlice = prismic.SharedSlice<"Image", ImageSliceVariation>;
  * Primary content in *LinkedTiles → Default → Primary*
  */
 export interface LinkedTilesSliceDefaultPrimary {
+  /** Hide this component on the frontend. Defaults to false. */
+  hide: prismic.BooleanField;
+
   /**
    * Heading field in *LinkedTiles → Default → Primary*
    *
@@ -1213,6 +1234,9 @@ export type LinkedTilesSlice = prismic.SharedSlice<
  * Primary content in *Quote → Default → Primary*
  */
 export interface QuoteSliceDefaultPrimary {
+  /** Hide this component on the frontend. Defaults to false. */
+  hide: prismic.BooleanField;
+
   /**
    * Quote field in *Quote → Default → Primary*
    *
@@ -1276,6 +1300,9 @@ export type QuoteSlice = prismic.SharedSlice<"Quote", QuoteSliceVariation>;
  * Primary content in *RichTextSection → Default → Primary*
  */
 export interface RichTextSectionSliceDefaultPrimary {
+  /** Hide this component on the frontend. Defaults to false. */
+  hide: prismic.BooleanField;
+
   /**
    * Heading field in *RichTextSection → Default → Primary*
    *
@@ -1331,6 +1358,9 @@ export type RichTextSectionSlice = prismic.SharedSlice<
  * Primary content in *VideoEmbed → Default → Primary*
  */
 export interface VideoEmbedSliceDefaultPrimary {
+  /** Hide this component on the frontend. Defaults to false. */
+  hide: prismic.BooleanField;
+
   /**
    * Embed URL field in *VideoEmbed → Default → Primary*
    *

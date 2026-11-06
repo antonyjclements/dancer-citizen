@@ -86,11 +86,12 @@ function linkLegacyReadMoreText(field: RichTextField | null | undefined): RichTe
 }
 
 export function Slices({ slices, references }: { slices: any[] | undefined; references?: any[] }) {
-  if (!slices?.length) return null;
+  if (!slices?.some((slice) => slice.primary?.hide !== true)) return null;
 
   return (
     <div className="slices">
       {slices.map((slice, index) => {
+        if (slice.primary?.hide === true) return null;
         const key = `${slice.id ?? slice.slice_type}-${index}`;
         if (slice.slice_type === "RichTextSection") {
           return <section key={key} className="rich-section"><RichText field={slice.primary.body as RichTextField} /></section>;

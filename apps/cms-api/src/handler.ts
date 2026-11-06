@@ -28,12 +28,18 @@ async function startPreview(event: APIGatewayProxyEventV2): Promise<APIGatewayPr
   }
 
   const client = createPrismicClient();
-  const redirectPath = await client.resolvePreviewURL({
-    previewToken: token,
-    documentID: documentId,
-    defaultURL: "/",
-  }).catch(() => token);
-  const location = typeof redirectPath === "string" && redirectPath.startsWith("/") ? redirectPath : "/";
+  let redirectPath: string;
+  try {
+    redirectPath = await client.resolvePreviewURL({
+      previewToken: token,
+      documentID: documentId,
+      defaultURL: "/",
+    });
+  } catch {
+    return jsonResponse(400, { error: "Preview could not be opened. Start a new preview from Prismic." }, { "cache-control": "no-store" });
+  }
+  const location = redirectPath.startsWith("/") && !redirectPath.startsWith("//") && !/[\\\r\n]/.test(redirectPath)
+    ? redirectPath : "/";
 
   return {
     statusCode: 302,
@@ -70,7 +76,7 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
     }
 
     if (resource === "admin" && uid === "logout" && method === "POST") {
-      return logoutAdmin();
+      return logoutAdmin(event);
     }
 
     if (resource === "admin" && uid === "submissions" && method === "GET" && !parts[cmsIndex + 2]) {
@@ -86,6 +92,10 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
     }
 
     if (resource === "submissions" && method === "POST") {
+      if (process.env.SITE_ENVIRONMENT === "staging") {
+        // CloudFront's SPA fallback rewrites 403 responses to the HTML shell.
+        return jsonResponse(405, { errors: ["Submissions are disabled on this staging site."] }, { "cache-control": "no-store", allow: "OPTIONS" });
+      }
       return await createSubmission(event);
     }
 

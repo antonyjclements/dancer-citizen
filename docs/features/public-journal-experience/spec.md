@@ -2,7 +2,7 @@
 title: Public Journal Experience
 status: active
 created: 2026-05-25
-updated: 2026-07-11
+updated: 2026-11-05
 tags:
   - journal
   - prismic
@@ -39,6 +39,7 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - General content pages live at `/[uid]` and are fetched by UID from Prismic.
 - Missing Prismic documents for issue, article, or content pages call `notFound()`.
 - Issue pages render an issue hero, non-legacy issue body slices, a generated table of contents, and previous/next issue navigation.
+- Issue headers display the same normalized thumbnail as the home page, with the image beside the title on desktop and above it on mobile. Titles and dates remain on a solid background, separate from the image.
 - Issue page `LinkedTiles` body slices are treated as imported legacy table-of-contents placeholders and are not rendered directly; when present, their linked document order drives the generated public TOC.
 - If an issue has no `LinkedTiles` body slice, table of contents entries come from article/content documents tagged with the formatted issue tag for the current issue number.
 - The issue table of contents excludes `issue_page` documents and orders entries by first publication date ascending.
@@ -52,13 +53,13 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - Prismic images render with non-empty alt text from the image field when available, falling back to nearby captions, credits, or titles.
 - Content pages render a header and then the Prismic body through `SliceZone`.
 - Contributor list slices decode imported legacy title-link payloads into readable contributor names, same-page anchors, issue labels, and inline `read more` links.
-- The `/submissions` content page renders its Prismic-managed body copy directly so content editors can update public submission guidance without code changes; the direct submission form is appended by the React page.
+- The `/submissions` content page renders its Prismic-managed body copy, omitting components explicitly marked `Hide`, so content editors can update public submission guidance without code changes; the direct submission form is appended by the React page.
 - The `/support-us` content page converts the imported PayPal donation text into a button-style external link that opens in a new tab.
 - Journal summaries normalize title, subtitle, issue number, publication date, and href for table-of-contents links.
 - The home page brand headline should keep "The Dancer-Citizen" on one line when the viewport has enough width to support it without overflow.
 - The latest issue presentation should not display a dead or non-clickable Issue 20 table of contents; if table-of-contents content is visible, entries should link to the corresponding issue, article, or content pages.
 - About-page rich text and imported links should render as clickable links.
-- The editors/staff page should prioritize Jane Alexandre, Julie B. Johnson, Erica Moshman, and Emily Metzner, then group past contributors under editorially meaningful headings.
+- The editors/staff page must display CMS-authored Biography Lists with their headings, membership, and ordering preserved, following `docs/features/prismic-content-model-and-slices/spec.md`.
 - The In the Moment page is expected to remain a pending-content page until editorial content is available.
 
 ## Key Flows
@@ -104,11 +105,8 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - `/[uid]` displays the requested content page header and body slices.
 - `/about` renders imported links as clickable anchors.
 - `/contributors` displays contributor names and issue labels without exposing imported legacy JSON field payloads.
-- `/submissions` renders the CMS-authored page body and the direct submission form without code-level filtering of historical call-for-submissions copy.
+- `/submissions` renders visible CMS-authored body components and the direct submission form. Components with `primary.hide: true` are omitted per `SLICE-001` in `docs/features/prismic-content-model-and-slices/spec.md`; copy is not filtered based on its text.
 - `/support-us` displays the PayPal donation call to action as a button with `target="_blank"`.
-- `/editors-staff` lists Julie B. Johnson, Erica Moshman, Emily Metzner, and Jane Alexandre before other people, in that order; Jane Alexandre is marked "In Memoriam".
-- `/editors-staff` groups Takiyah Nur Amin, Saroya Corbett, Laura Jones, jsk, and Christiana McLeod Horn under "Past Editors".
-- `/editors-staff` groups Kimberly Binns and Carly Knudson under "Moving the Map".
 - `/in-the-moment` can show a clear pending-content state until editorial content is supplied.
 - The latest Issue 20 table-of-contents surface is either omitted when it cannot link anywhere or rendered with working links for every visible entry.
 - Missing issue, article, and content UIDs result in `notFound()`.
@@ -118,6 +116,22 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - Prismic reads go through the shared client and page-level reads stay in feature data loaders.
 - The React delivery path preserves article-specific social metadata without falling back to a generic SPA `index.html`.
 - The React delivery path redirects legacy issue and issue-article URLs to their current public route shape.
+
+### ISSUE-001 — Issue headers display readable cover imagery
+
+- `/issues/[uid]` displays the home page issue thumbnail (`tile_thumbnail`, falling back to `hero_image`) when available, preserving its aspect ratio and normalized alt text.
+- The image appears above the publication date and title on mobile and beside them on desktop; text stays on a solid background without overlapping the image.
+- Long issue titles wrap without horizontal overflow at narrow mobile widths.
+- Issues without an image retain their date and title without an empty image placeholder.
+- The issue body, table of contents, and previous/next issue links remain available below the header.
+
+### EDITORS-001 — Editors / Staff follows CMS-authored lists
+
+- `/editors-staff` renders each Biography List in CMS body order and each biography in that list's item order, with no hardcoded current/past-editor membership or priority names.
+- An editor can place “Past Editors” above “Editors”, rename either section, or add other lists; the public page respects those choices.
+- Non-biography slices retain their position relative to biography lists.
+- Jane Alexandre remains marked “In Memoriam” wherever her biography is placed; no role labels are synthesized.
+- Heading rendering and existing single-list handling follow the acceptance criteria in `docs/features/prismic-content-model-and-slices/spec.md`.
 
 ## Boundaries and Non-Goals
 
@@ -137,4 +151,4 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 
 ## Decision Links
 
-- None yet.
+- `docs/decisions/2026-07-10-do-not-inject-editor-role-labels.md`: retain the role-label restriction and memorial behavior; CMS-authored ordering replaces its historical grouping rationale.
