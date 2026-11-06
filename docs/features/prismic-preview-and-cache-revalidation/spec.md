@@ -2,12 +2,13 @@
 title: Prismic Preview and Cache Behavior
 status: active
 created: 2026-05-25
-updated: 2026-07-11
+updated: 2026-11-05
 tags:
   - prismic
   - preview
   - cache
 related_decisions:
+  - docs/decisions/2026-11-05-use-isolated-staging-for-prismic-previews.md
   - docs/decisions/2026-07-11-remove-legacy-next-runtime.md
 related_standards:
   - docs/standards/prismic/use-shared-prismic-client.md
@@ -55,6 +56,14 @@ Editors can preview Prismic content through the React/CMS delivery path while pr
 - HTML-shell preview responses use the preview cookie when resolving route metadata.
 - CMS JSON preview responses use the preview cookie when fetching normalized content.
 
+### PREV-001 — Preview session boundaries
+
+- Missing preview tokens return 400 without setting a cookie; failed preview resolution returns a useful 400 rather than silently redirecting to published content.
+- Preview redirects stay within the site, including rejecting protocol-relative destinations.
+- Preview start/exit and preview JSON/HTML responses remain `no-store`.
+- A preview cookie is scoped to its hostname; staging preview sessions do not enable production previews.
+- Prismic's staging preview registration uses the staging origin and `/cms/preview/start`. A saved draft and linked page must be checked on the deployed site.
+
 ## Boundaries and Non-Goals
 
 - The app does not currently implement Prismic webhook-driven invalidation.
@@ -63,8 +72,7 @@ Editors can preview Prismic content through the React/CMS delivery path while pr
 
 ## Open Questions / TODOs
 
-- Should preview behavior have an end-to-end smoke test?
-- Should the preview cookie store the raw preview token or a resolved Prismic ref after real Prismic preview testing?
+- Complete the deployed saved-draft smoke test after configuring the staging preview registration.
 
 ## Decision Links
 

@@ -54,6 +54,13 @@ export function App() {
   return (
     <>
       <ScrollToTop />
+      {import.meta.env.MODE === "staging" && (
+        <aside className="staging-banner" aria-label="Staging site">
+          <strong>Staging site</strong>
+          <span>Content preview · Submissions are disabled</span>
+          <a href="/cms/preview/exit">Exit preview</a>
+        </aside>
+      )}
       <header className="site-header">
         <Link to="/" className="brand" aria-label="The Dancer-Citizen home" onClick={() => setIsMenuOpen(false)}>
           <img src={logoSrc} alt="" className="brand-logo" />

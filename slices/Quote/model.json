@@ -11,6 +11,13 @@
       "docURL": "https://prismic.io/docs/slices",
       "version": "initial",
       "primary": {
+        "hide": {
+          "type": "Boolean",
+          "config": {
+            "label": "Hide",
+            "default_value": false
+          }
+        },
         "quote": {
           "type": "StructuredText",
           "config": {

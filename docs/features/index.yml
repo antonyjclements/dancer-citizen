@@ -6,6 +6,7 @@ features:
     tags:
       - aws
       - deployment
+      - staging
       - prismic
       - public-site
   - key: prismic-content-model-and-slices
@@ -16,6 +17,7 @@ features:
       - prismic
       - slices
       - content-model
+      - biographies
   - key: prismic-preview-and-cache-revalidation
     title: Prismic Preview and Cache Behavior
     spec: docs/features/prismic-preview-and-cache-revalidation/spec.md
@@ -30,6 +32,7 @@ features:
     status: active
     tags:
       - journal
+      - editors
       - prismic
       - public-site
   - key: site-shell-and-navigation

@@ -22,6 +22,7 @@ infra/node_modules
 # production
 /build
 apps/*/dist
+apps/*/dist-staging
 infra/cdk.out
 
 # misc
@@ -52,3 +53,5 @@ next-env.d.ts
 .aw/workflow-trace.jsonl
 .aw/pin/
 .aw/session
+/.aw/workstreams/
+.worktrees

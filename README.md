@@ -36,6 +36,8 @@ Admin users can review submissions at `/admin/submissions`. The first admin rele
 
 ```bash
 npm run test:api
+npm run test -w @dancer-citizen/react-site
+npm run test:infra
 npm run build:api
 npm run build:react
 npm run cdk:synth
@@ -43,6 +45,13 @@ npm run lint
 ```
 
 `npm run cdk:synth` should be run after `npm run build:react` when you want the HTML-shell Lambda to embed the current Vite asset references.
+`npm run test:infra` requires both `npm run build:react` and `npm run build:staging` first; it checks the deployed shells as well as environment isolation, routing, domain configuration, and cache policies.
+
+## CMS Component Visibility
+
+Shared body components, including those on `/submissions`, have a **Hide** toggle (`primary.hide`, default `false`). When set to `true`, the component is omitted from the frontend. Existing components without the field remain visible. The page heading and the separately appended submission form are outside this toggle.
+
+The field definitions live in `slices/*/model.json`. Sync the updated shared slice models to the Prismic repository before using the toggle in the editor, then publish the page normally. This repository no longer includes Slice Machine configuration or a model-push command; deployment of the React app alone does not sync CMS models.
 
 ## Agentic Workflow
 
@@ -88,6 +97,58 @@ Optional environment variables:
 - `SUBMISSION_DOWNLOAD_URL_TTL_SECONDS`: optional signed S3 download URL lifetime. Defaults to 5 minutes.
 
 CDK outputs the CloudFront URL, CMS API URL, submission files bucket, submissions table, and notification topic ARN after deployment.
+
+## Staging and Content Preview
+
+Open the [staging site](https://staging.dancercitizen.org).
+
+Staging deploys the same application to a separate `DancerCitizenStagingStack` with its own CloudFront distribution, buckets, API, functions, submissions table, and notification topic. Production commands continue selecting `DancerCitizenWebStack`; only an explicit `-c environment=staging` selects staging. Invalid environment names fail instead of falling back to production.
+
+Build and inspect staging:
+
+```bash
+npm run synth:staging
+```
+
+Deploy staging with configured AWS credentials:
+
+```bash
+npm run deploy:staging
+# For a named AWS profile:
+npm run deploy:staging -- --profile antonyjclements
+```
+
+Both commands build staging into `apps/react-site/dist-staging` and typecheck the API before running CDK. The staging cloud assembly is saved in `infra/cdk.out/staging`. Production uses `apps/react-site/dist`, so its build assets stay separate. Staging synth fails if the staging build is missing. Never deploy the staging cloud assembly to the production stack.
+
+Without domain configuration, CDK outputs the staging CloudFront URL. The default staging canonical/CORS origin is `https://staging.dancercitizen.org`; if using only the generated CloudFront hostname, set `STAGING_SITE_URL` to that HTTPS origin and redeploy. The staging build forces same-origin `/cms` requests regardless of production `VITE_CMS_API_BASE` settings.
+
+This repository includes the non-secret staging hostname, existing wildcard certificate ARN, and Route 53 zone under `context.staging` in `infra/cdk.json`. The staging commands use those defaults, so normal redeploys preserve the domain wiring. Environment variables override these defaults; production ignores the staging context. To deploy a CloudFront-only staging site in another account, remove the domain/certificate/zone entries from that staging context first.
+
+To attach `staging.dancercitizen.org`, supply the existing wildcard certificate ARN and DNS zone values through deployment environment variables:
+
+```bash
+export STAGING_DOMAIN_NAME=staging.dancercitizen.org
+export STAGING_CERTIFICATE_ARN='arn:aws:acm:us-east-1:YOUR_ACCOUNT_ID:certificate/YOUR_CERTIFICATE_ID'
+export STAGING_HOSTED_ZONE_ID='YOUR_HOSTED_ZONE_ID'
+export STAGING_HOSTED_ZONE_NAME=dancercitizen.org
+npm run synth:staging -- --profile antonyjclements
+npm run deploy:staging -- --profile antonyjclements
+```
+
+`STAGING_DOMAIN_NAME` and `STAGING_CERTIFICATE_ARN` must be supplied together. The ACM certificate must be issued, cover the hostname, and exist in `us-east-1`. `STAGING_HOSTED_ZONE_ID` and `STAGING_HOSTED_ZONE_NAME` are optional as a pair; when supplied, CDK creates A and AAAA aliases for only the staging hostname. Otherwise, create the hostname's CNAME at your DNS provider using the CloudFront output. `STAGING_SITE_URL` defaults to the configured domain and must match it if explicitly supplied. Production's `SITE_URL`, admin credentials, reCAPTCHA settings, and submission email recipients are ignored for staging. Keep overrides consistent with `infra/cdk.json` on later deployments.
+
+Staging shows a banner and an **Exit preview** link, adds `noindex, nofollow` in HTML and every CloudFront behavior's `X-Robots-Tag`, and disables submission writes in both the form and API. The staging topic has no editorial email subscriptions. Staging is publicly reachable; `noindex` discourages search indexing and does not provide access control. Without a preview session, staging reads published content from the same `dancercitizen` Prismic repository.
+
+In the Prismic repository's **Settings → Previews**, add a preview named **Staging**:
+
+- Domain: `https://staging.dancercitizen.org` (or the deployed CloudFront origin).
+- Preview route: `/cms/preview/start`.
+
+Editors save a draft, choose **Staging** when previewing, review the rendered page, and publish from Prismic when ready. Preview content is fetched at request time; content edits do not require deployment. The preview cookie lasts 30 minutes, is HTTP-only and host-scoped, and is cleared by **Exit preview**. An expired or invalid preview that fails to resolve returns an error; start a new preview in Prismic. The staging hostname keeps these sessions separate from production. Use a Prismic-generated preview link to share a draft; an ordinary article URL alone does not establish a preview session. See [Prismic preview configuration](https://prismic.io/academy/prismic-and-nextjs/9-content-changes-and-previews/3-configure-previews) for the repository settings.
+
+Before relying on editorial previews, check a saved change to an existing article, a never-published article, issue/table-of-contents links, navigation, desktop/mobile layout, and exit-preview. Use a separate browser session to confirm ordinary staging visits still show published content. Confirm draft HTML and `/cms/*` JSON return `Cache-Control: no-store`, submission POSTs return 405, HTTPS/assets load, and `X-Robots-Tag` is present. The disabled submission route uses 405 because CloudFront's SPA fallback rewrites 403 responses to HTML. Automated preview tests use mocks; they do not replace a real Prismic saved-draft check.
+
+Deploy only `DancerCitizenStagingStack` after inspecting its template/change set. A failed staging rollout does not require a production change. Roll back staging code by rebuilding a known-good revision and redeploying only staging with the same domain configuration; retain the prior staging asset/synth output until validation succeeds. Buckets and the submissions table use retention policies. Do not delete the staging stack or retained data as a routine rollback.
 
 After deployment, each recipient must click **Confirm subscription** in the email from Amazon SNS before notifications can arrive. Confirm both default addresses (or all configured replacements), then send a test submission and verify receipt in every inbox. Changing `SUBMISSION_EMAIL_TO` requires another deployment and confirmation by new subscribers. No SES identity verification or sandbox exit is needed; `SUBMISSION_EMAIL_FROM` is no longer used. SNS sends plain-text notifications with an AWS-managed sender and unsubscribe link. Notifications over 256 KiB are shortened safely and include a notice directing editors to the full stored submission at `/admin/submissions`; contact the submitter using the email address in the message body. For shared mailing lists, protect against accidental group unsubscription using [AWS's subscription guidance](https://docs.aws.amazon.com/sns/latest/dg/sns-email-notifications.html).
 

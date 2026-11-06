@@ -200,57 +200,20 @@ function nameForBiographyItem(item: any) {
   return cleanText(item.name || item.title || item.contributor_name).toLowerCase();
 }
 
-function biographyItemByNamePrefix(items: any[], namePrefix: string) {
-  return items.find((item) => nameForBiographyItem(item).startsWith(namePrefix));
-}
-
-function biographyList(id: string, heading: string, items: any[]) {
-  return {
-    id,
-    slice_type: "BiographyList",
-    primary: { heading },
-    items,
-  };
-}
-
 function normalizeEditorsStaffPage(page: AnyDocument): AnyDocument {
-  const body = page.data.body ?? [];
-  const biographyItems = body.flatMap((slice: any) => slice.slice_type === "BiographyList" ? slice.items ?? [] : []);
-  if (!biographyItems.length) return page;
-
-  const jane = biographyItemByNamePrefix(biographyItems, "jane alexandre");
-  const julie = biographyItemByNamePrefix(biographyItems, "julie b. johnson");
-  const current = [
-    julie ? { ...julie } : null,
-    biographyItemByNamePrefix(biographyItems, "erica moshman"),
-    biographyItemByNamePrefix(biographyItems, "emily metzner"),
-    jane ? { ...jane, inMemoriam: true } : null,
-  ].filter(Boolean);
-  const past = ["takiyah nur amin", "saroya corbett", "laura jones", "jsk", "christiana mcleod horn"]
-    .flatMap((name) => {
-      const item = biographyItemByNamePrefix(biographyItems, name);
-      return item ? [item] : [];
-    });
-  const moving = ["kimberly binns", "carly knudson"]
-    .flatMap((name) => {
-      const item = biographyItemByNamePrefix(biographyItems, name);
-      return item ? [item] : [];
-    });
-  const groupedNames = new Set([...current, ...past, ...moving].map(nameForBiographyItem));
-  const otherItems = biographyItems.filter((item: any) => !groupedNames.has(nameForBiographyItem(item)));
-  const groupedSlices = [
-    current.length ? biographyList("editors-current", "Editors", current) : null,
-    past.length ? biographyList("editors-past", "Past Editors", past) : null,
-    moving.length ? biographyList("editors-moving-map", "Moving the Map", moving) : null,
-    otherItems.length ? biographyList("editors-other", "Additional Editors & Staff", otherItems) : null,
-  ].filter(Boolean);
-  const nonBiographyBody = body.filter((slice: any) => slice.slice_type !== "BiographyList");
-
   return {
     ...page,
     data: {
       ...page.data,
-      body: [...groupedSlices, ...nonBiographyBody],
+      body: (page.data.body ?? []).map((slice: any) => {
+        if (slice.slice_type !== "BiographyList" || !slice.items) return slice;
+        return {
+          ...slice,
+          items: slice.items.map((item: any) => nameForBiographyItem(item).startsWith("jane alexandre")
+            ? { ...item, inMemoriam: true }
+            : item),
+        };
+      }),
     },
   };
 }

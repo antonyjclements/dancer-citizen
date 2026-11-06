@@ -1,0 +1,22 @@
+{
+  "files": {
+    ".augmented-workflow-version": "f8405a7330c287028d470c3ee3506f878f1ad85ed79c1d1adc19df2ff7398915",
+    ".claude/hooks/log-session.sh": "6dce3a52d8d265cc0a3732cf16827a64e2708d4dd6425c3610d427500a172398",
+    ".claude/settings.json": "5bb11e35f7a4eca454d42dc4c98d4a1fb23d566223e77942993e82cae46afa38",
+    ".gitattributes": "8fa3f19498293efe3997f87c103ae8b1eda7e9203a77d0a40215fded4ccd7939",
+    ".scripts/aw-gate.js": "f1ba5fa9af432ea33b5dff240728c80f3be442394381c16d9565af512284bcc6",
+    "CLAUDE.md": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+    "docs/metrics/README.md": "6fafcab2c477e380fb070fff23ab6650c07e9446188e1a4e1ace3d3721c6ce7f",
+    "docs/product/prds/index.yml": "bf228500c17ad635fe421a3e940767565c2ca92663236acd3f4fd0d37b38c3aa",
+    "docs/product/prds/template.md": "d0bb8017ad94abd2c9d66199a8997e7bfb33aabee758cdfbeb55c1cc06c8552d",
+    "docs/solutions/README.md": "013b5c7a54b957d46595cffa4d3524978fad5191e33df67d07728f8d35585b05",
+    "docs/standards/behavior-pinning.md": "e0343426589a599e0e8294fb5b5d169d4761256ba39a22c5197ff94404a65977",
+    "docs/standards/coding-approach.md": "138adf1938ada1705950a659cb138cec4e764d3c07f6ce4f652c8b55f587f51a",
+    "docs/standards/e2e-coverage.md": "94cfe03e978e66f75ef0de5628d70e248aeb1fe06227c51eb793bbc040383e32",
+    "docs/standards/traceability.md": "0c3d83984e58304a4d4da05c9bb66ca0f91a72a9cb985852d4eca979096166f7",
+    "docs/workflow/config.yml": "f66f9cf309d15bdcd91925f84ff40f84ea94ef0f7160b5f59ef462ee31dd7cd8",
+    "docs/workflow/org-knowledge.md": "ca6b7eaec48087d29ec01f8d0c5c65052b364b6bbfbaf614e14ec55be7094cc6"
+  },
+  "schema": 1,
+  "version": "0.15.0"
+}

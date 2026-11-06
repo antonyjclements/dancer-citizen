@@ -7,6 +7,7 @@ import { useAsyncData } from "../hooks";
 import { stripLegacyHtml } from "../text";
 import { NotFoundPage } from "./NotFoundPage";
 
+// @spec ISSUE-001
 export function IssuePage() {
   const { uid = "" } = useParams();
   const loadIssue = useCallback(() => getJson<IssueData>(`/issues/${uid}`), [uid]);
@@ -16,9 +17,20 @@ export function IssuePage() {
 
   return (
     <main>
-      <section className="article-hero">
-        <div className="hero-kicker">{state.data.summary.publicationDate}</div>
-        <h1>{stripLegacyHtml(state.data.summary.title)}</h1>
+      <section className={`article-hero issue-hero${state.data.summary.thumbnail ? " issue-hero-with-image" : ""}`}>
+        {state.data.summary.thumbnail ? (
+          <img
+            className="issue-hero-image"
+            src={state.data.summary.thumbnail.url}
+            alt={state.data.summary.thumbnail.alt}
+            width={state.data.summary.thumbnail.dimensions?.width}
+            height={state.data.summary.thumbnail.dimensions?.height}
+          />
+        ) : null}
+        <div className="issue-hero-copy">
+          <div className="hero-kicker">{state.data.summary.publicationDate}</div>
+          <h1>{stripLegacyHtml(state.data.summary.title)}</h1>
+        </div>
       </section>
       <section className="body">
         {state.data.summary.subtitle ? <p className="body-intro">{stripLegacyHtml(state.data.summary.subtitle)}</p> : null}

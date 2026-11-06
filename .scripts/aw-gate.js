@@ -25,9 +25,13 @@
 //                   git-ignored cache dir so skills can read it as a second tier.
 //   prune-telemetry Delete telemetry and tracking month shards older than
 //                   their configured retention_months (git history is the archive).
-//   track <skill>   Append one JSONL line recording a skill invocation to
+//   track <skill>   Append one JSONL line recording a public invocation or an
+//                   explicitly selected internal stage execution to
 //                   docs/metrics/skills-YYYY-MM.jsonl. No-op unless
 //                   tracking.enabled is true. Fire-and-forget, never fails.
+//   tracking-schema Print the supported spec tracking schema version.
+//   shipping-tracking-schema Print the supported shipping tracking schema version.
+//                   Read-only capability probe; no config or state access.
 //   trace           Deterministically check spec/test/code traceability.
 //   trace-annotate  Deterministically insert explicit spec annotations for skills.
 //   workflow-record Deterministically append process breadcrumbs for workflow use.
@@ -671,8 +675,8 @@ function cmdPruneTelemetry() {
 }
 
 // --- Skill tracking (git-tracked skill-invocation log) -------------------
-// Silent fire-and-forget writer skills invoke at start. Records one JSONL line
-// per invocation to docs/metrics/skills-YYYY-MM.jsonl so cross-repo analysis
+// Silent fire-and-forget writer skills invoke at start. Records public
+// invocations separately from explicit internal stage executions so analysis
 // can answer workflow-drop-off, entry-point, and adoption questions. Design
 // notes: docs/workflow/tracking.md.
 function readOrMintSession(tracking) {
@@ -698,7 +702,8 @@ function readOrMintSession(tracking) {
 // Canonical mapping from bundled skill name to workflow step key. Same
 // convention as this file's other bundled defaults (`.aw-gate-state.json`,
 // `docs/metrics/events.jsonl`) — aw-gate.js owns AW's built-in identifiers.
-// A per-repo `workflow.steps.<step>.skill` override wins when present.
+// A per-repo `workflow.steps.<step>.skill` override wins for legacy callers.
+// Keep retired names here for compatibility; routed entrypoints have no single default.
 const DEFAULT_SKILL_TO_STEP = {
   'aw-prd': 'prd',
   'aw-brainstorm': 'brainstorm',
@@ -713,6 +718,8 @@ const DEFAULT_SKILL_TO_STEP = {
   'aw-commit-push-pr': 'commit_push_pr',
 };
 
+const TRACKING_STAGES = new Set([...Object.values(DEFAULT_SKILL_TO_STEP), 'monitor_pipeline']);
+
 function workflowStepForSkill(config, skill) {
   const steps = (config.workflow && config.workflow.steps) || {};
   for (const key of Object.keys(steps)) {
@@ -725,22 +732,50 @@ function workflowStepForSkill(config, skill) {
 function cmdTrack(args) {
   // Never fail the caller. Wrap the whole thing and swallow everything.
   try {
-    const { positional } = parseFlags(args);
+    const { positional, flags } = parseFlags(args);
     const skill = positional[0];
-    if (!skill) return; // no skill name — nothing to record, silent exit
+    if (!skill || positional.length !== 1) return;
     const config = loadConfig();
     const tracking = config.tracking || {};
     if (tracking.enabled !== true) return; // per-repo kill switch
+    const explicit = Object.keys(flags).length > 0;
+    let workflowStep;
+    let metadata = {};
+    if (explicit) {
+      // Validate before minting a session or creating any directory. A partial
+      // or mistyped route must not silently fall back to first-match inference.
+      const allowedFlags = ['stage', 'mode', 'event', 'invocation-id'];
+      if (Object.keys(flags).some((key) => !allowedFlags.includes(key))) return;
+      if (args.filter((arg) => arg.startsWith('--')).length !== Object.keys(flags).length) return;
+      if (!TRACKING_STAGES.has(flags.stage)) return;
+      const specMode = ['direct', 'exploratory'].includes(flags.mode);
+      const shippingMode = ['local-commit', 'full-pr'].includes(flags.mode);
+      if (!specMode && !shippingMode) return; // description modes never write tracking state
+      if (shippingMode && !['commit', 'commit_push_pr'].includes(flags.stage)) return;
+      if (flags.mode === 'local-commit' && flags.stage !== 'commit') return;
+      if (flags.stage === 'brainstorm' && flags.mode !== 'exploratory') return;
+      if (skill === 'aw-spec' && (!specMode || !['brainstorm', 'create_spec'].includes(flags.stage))) return;
+      if (skill === 'aw-ship' && !shippingMode) return;
+      const event = flags.event === undefined ? 'invocation' : flags.event;
+      if (!['invocation', 'stage'].includes(event)) return;
+      const invocationId = flags['invocation-id'];
+      if (typeof invocationId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(invocationId)) return;
+      workflowStep = flags.stage;
+      metadata = { schema_version: 2, event, mode: flags.mode, invocation_id: invocationId };
+    } else {
+      if (['aw-spec', 'aw-ship'].includes(skill)) return; // multi-stage entrypoint must name its route
+      workflowStep = workflowStepForSkill(config, skill);
+    }
     const rel = shardPath(tracking, 'docs/metrics/skills.jsonl', new Date());
     const abs = resolveRepoPath(rel);
     if (!abs) return; // misconfigured path; stay silent
     const sessionId = readOrMintSession(tracking);
-    const workflowStep = workflowStepForSkill(config, skill);
     const record = {
       ts: new Date().toISOString(),
       session_id: sessionId,
       skill,
       source: 'skill',
+      ...metadata,
     };
     if (workflowStep) record.workflow_step = workflowStep;
     fs.mkdirSync(path.dirname(abs), { recursive: true });
@@ -2720,6 +2755,9 @@ function usage() {
       '  node .scripts/aw-gate.js org-sync',
       '  node .scripts/aw-gate.js prune-telemetry',
       '  node .scripts/aw-gate.js track <skill>',
+      '  node .scripts/aw-gate.js track <skill> --stage <step> --mode direct|exploratory|local-commit|full-pr --invocation-id <token> [--event invocation|stage]',
+      '  node .scripts/aw-gate.js tracking-schema',
+      '  node .scripts/aw-gate.js shipping-tracking-schema',
       '',
       'Config: docs/workflow/config.yml (gates, telemetry, tracking, org_knowledge, trace, e2e, workflow_trace, pin).',
       'All are opt-in and disabled by default.',
@@ -2755,6 +2793,10 @@ function main() {
       return cmdPruneTelemetry();
     case 'track':
       return cmdTrack(rest);
+    case 'tracking-schema':
+    case 'shipping-tracking-schema':
+      process.stdout.write('2\n');
+      return;
     case 'help':
     case '--help':
     case '-h':

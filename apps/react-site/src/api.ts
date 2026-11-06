@@ -76,7 +76,7 @@ export type AdminSubmissionDetail = AdminSubmissionListItem & {
   } | null;
 };
 
-const apiBase = import.meta.env.VITE_CMS_API_BASE || "/cms";
+const apiBase = import.meta.env.MODE === "staging" ? "/cms" : import.meta.env.VITE_CMS_API_BASE || "/cms";
 
 export async function getJson<T>(path: string): Promise<T> {
   const response = await fetch(`${apiBase}${path}`, { credentials: "include" });
