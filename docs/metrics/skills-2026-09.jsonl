@@ -7,3 +7,7 @@
 {"ts":"2026-09-28T21:25:35.363Z","session_id":"85f22151-93a5-4228-9be7-063742629b85","skill":"aw-commit-push-pr","source":"skill","workflow_step":"commit_push_pr"}
 {"ts":"2026-09-28T21:26:15.423Z","session_id":"85f22151-93a5-4228-9be7-063742629b85","skill":"aw-check-workflow-compliance","source":"skill","workflow_step":"check_workflow_compliance"}
 {"ts":"2026-09-28T21:34:19.341Z","session_id":"85f22151-93a5-4228-9be7-063742629b85","skill":"aw-resolve-pr-feedback","source":"skill"}
+{"ts":"2026-09-29T17:24:22.109Z","session_id":"d5b7c6a9-9697-43ee-a6e0-9bf797092646","skill":"aw-help","source":"skill"}
+{"ts":"2026-09-29T17:26:26.137Z","session_id":"d5b7c6a9-9697-43ee-a6e0-9bf797092646","skill":"aw-create-spec","source":"skill","workflow_step":"create_spec"}
+{"ts":"2026-09-29T17:39:35.393Z","session_id":"d5b7c6a9-9697-43ee-a6e0-9bf797092646","skill":"aw-work","source":"skill","workflow_step":"work"}
+{"ts":"2026-09-29T17:41:40.547Z","session_id":"d5b7c6a9-9697-43ee-a6e0-9bf797092646","skill":"aw-review","source":"skill","workflow_step":"review"}

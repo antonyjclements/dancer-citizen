@@ -1,0 +1,12 @@
+{"ts":"2026-11-05T17:11:33.733Z","event":"review","detail":"document review: docs/features/aws-react-lambda-delivery/plan.md and related specs","source":"aw-gate"}
+{"ts":"2026-11-05T17:20:53.257Z","event":"review","detail":"code review; evidence .aw/tmp/staging-review.json","source":"aw-gate"}
+{"ts":"2026-11-05T17:20:53.323Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
+{"ts":"2026-11-05T17:20:53.388Z","event":"capture","detail":"decision","source":"aw-gate"}
+{"ts":"2026-11-05T17:28:14.275Z","event":"review","detail":"final code review; .aw/tmp/staging-review.json","source":"aw-gate"}
+{"ts":"2026-11-05T17:28:14.342Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
+{"ts":"2026-11-05T17:30:47.391Z","event":"review","detail":"final review after deployed verification","source":"aw-gate"}
+{"ts":"2026-11-05T17:30:47.456Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
+{"ts":"2026-11-05T18:45:19.918Z","event":"review","detail":"report-only, issue header fix only","source":"aw-gate"}
+{"ts":"2026-11-05T18:46:30.488Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
+{"ts":"2026-11-06T01:41:26.527Z","event":"review","detail":"Scoped local Hide-toggle review; unrelated pre-existing changes excluded","source":"aw-gate"}
+{"ts":"2026-11-06T01:41:26.772Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
