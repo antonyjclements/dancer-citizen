@@ -24,3 +24,7 @@
 {"ts":"2026-11-05T19:01:23.175Z","session_id":"8f4c0971-77a3-415a-81ce-68b026ae0fe9","skill":"aw-capture","source":"skill"}
 {"ts":"2026-11-05T19:01:23.259Z","session_id":"8f4c0971-77a3-415a-81ce-68b026ae0fe9","skill":"aw-synthesize-memory","source":"skill"}
 {"ts":"2026-11-05T19:03:58.082Z","session_id":"8f4c0971-77a3-415a-81ce-68b026ae0fe9","skill":"aw-check-workflow-compliance","source":"skill","workflow_step":"check_workflow_compliance"}
+{"ts":"2026-11-06T02:04:23.062Z","session_id":"d656fbf4-7244-457e-b111-ddbd9a5fe3b7","skill":"aw-review","source":"skill","workflow_step":"review"}
+{"ts":"2026-11-06T02:05:25.366Z","session_id":"d656fbf4-7244-457e-b111-ddbd9a5fe3b7","skill":"aw-synthesize-memory","source":"skill"}
+{"ts":"2026-11-06T02:05:52.762Z","session_id":"d656fbf4-7244-457e-b111-ddbd9a5fe3b7","skill":"aw-check-workflow-compliance","source":"skill","workflow_step":"check_workflow_compliance"}
+{"ts":"2026-11-06T02:05:53.031Z","session_id":"d656fbf4-7244-457e-b111-ddbd9a5fe3b7","skill":"aw-ship","source":"skill","schema_version":2,"event":"stage","mode":"full-pr","invocation_id":"ship-production-hide-20261106","workflow_step":"commit"}
