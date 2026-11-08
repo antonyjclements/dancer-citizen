@@ -20,3 +20,4 @@
 {"ts":"2026-11-06T02:05:52.993Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
 {"ts":"2026-11-08T20:32:08.234Z","event":"review","detail":"scoped article hero fix","source":"aw-gate"}
 {"ts":"2026-11-08T20:32:56.050Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
+{"ts":"2026-11-08T20:33:37.123Z","event":"review","detail":"committed article hero fix","source":"aw-gate"}
