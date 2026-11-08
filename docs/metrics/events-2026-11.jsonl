@@ -21,3 +21,5 @@
 {"ts":"2026-11-08T20:32:08.234Z","event":"review","detail":"scoped article hero fix","source":"aw-gate"}
 {"ts":"2026-11-08T20:32:56.050Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
 {"ts":"2026-11-08T20:33:37.123Z","event":"review","detail":"committed article hero fix","source":"aw-gate"}
+{"ts":"2026-11-08T20:57:32.079Z","event":"review","detail":"article subtitle CSS","source":"aw-gate"}
+{"ts":"2026-11-08T20:57:32.196Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
