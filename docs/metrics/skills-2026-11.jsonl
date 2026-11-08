@@ -28,3 +28,10 @@
 {"ts":"2026-11-06T02:05:25.366Z","session_id":"d656fbf4-7244-457e-b111-ddbd9a5fe3b7","skill":"aw-synthesize-memory","source":"skill"}
 {"ts":"2026-11-06T02:05:52.762Z","session_id":"d656fbf4-7244-457e-b111-ddbd9a5fe3b7","skill":"aw-check-workflow-compliance","source":"skill","workflow_step":"check_workflow_compliance"}
 {"ts":"2026-11-06T02:05:53.031Z","session_id":"d656fbf4-7244-457e-b111-ddbd9a5fe3b7","skill":"aw-ship","source":"skill","schema_version":2,"event":"stage","mode":"full-pr","invocation_id":"ship-production-hide-20261106","workflow_step":"commit"}
+{"ts":"2026-11-08T20:31:27.823Z","session_id":"12c76f11-752a-452e-9812-76b2559bf66c","skill":"aw-ship","source":"skill","schema_version":2,"event":"invocation","mode":"full-pr","invocation_id":"article-hero-813a1ad4","workflow_step":"commit_push_pr"}
+{"ts":"2026-11-08T20:31:27.848Z","session_id":"12c76f11-752a-452e-9812-76b2559bf66c","skill":"aw-ship","source":"skill","schema_version":2,"event":"stage","mode":"full-pr","invocation_id":"article-hero-813a1ad4","workflow_step":"commit_push_pr"}
+{"ts":"2026-11-08T20:31:27.873Z","session_id":"12c76f11-752a-452e-9812-76b2559bf66c","skill":"aw-review","source":"skill","workflow_step":"review"}
+{"ts":"2026-11-08T20:32:08.281Z","session_id":"12c76f11-752a-452e-9812-76b2559bf66c","skill":"aw-ship","source":"skill","schema_version":2,"event":"stage","mode":"full-pr","invocation_id":"article-hero-813a1ad4","workflow_step":"commit"}
+{"ts":"2026-11-08T20:32:38.497Z","session_id":"12c76f11-752a-452e-9812-76b2559bf66c","skill":"aw-check-workflow-compliance","source":"skill","workflow_step":"check_workflow_compliance"}
+{"ts":"2026-11-08T20:32:56.096Z","session_id":"12c76f11-752a-452e-9812-76b2559bf66c","skill":"aw-ship","source":"skill","schema_version":2,"event":"stage","mode":"full-pr","invocation_id":"article-hero-813a1ad4","workflow_step":"commit"}
+{"ts":"2026-11-08T20:33:52.613Z","session_id":"12c76f11-752a-452e-9812-76b2559bf66c","skill":"aw-ship","source":"skill","schema_version":2,"event":"stage","mode":"full-pr","invocation_id":"article-hero-813a1ad4","workflow_step":"commit"}
