@@ -71,6 +71,9 @@
             "LinkedTiles": {
               "type": "SharedSlice"
             },
+            "BookReviews": {
+              "type": "SharedSlice"
+            },
             "BiographyList": {
               "type": "SharedSlice"
             },

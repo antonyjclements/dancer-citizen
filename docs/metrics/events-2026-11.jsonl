@@ -23,3 +23,9 @@
 {"ts":"2026-11-08T20:33:37.123Z","event":"review","detail":"committed article hero fix","source":"aw-gate"}
 {"ts":"2026-11-08T20:57:32.079Z","event":"review","detail":"article subtitle CSS","source":"aw-gate"}
 {"ts":"2026-11-08T20:57:32.196Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
+{"ts":"2026-11-09T02:38:36.856Z","event":"review","detail":"local feature review","source":"aw-gate"}
+{"ts":"2026-11-09T02:38:37.005Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
+{"ts":"2026-11-10T18:43:43.352Z","event":"review","detail":"Scoped gallery changes only","source":"aw-gate"}
+{"ts":"2026-11-10T18:43:43.443Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
+{"ts":"2026-11-10T20:10:00.134Z","event":"review","detail":"baseline feature review","source":"aw-gate"}
+{"ts":"2026-11-10T20:10:11.852Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}

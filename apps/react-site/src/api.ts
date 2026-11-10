@@ -41,8 +41,18 @@ export type ArticleData = {
   article: PrismicDocument;
   summary: JournalSummary;
   issue: JournalSummary | null;
+  reviewListing?: Pick<JournalSummary, "title" | "href"> | null;
   previousArticle: JournalSummary | null;
   nextArticle: JournalSummary | null;
+};
+
+export type BookReviewCard = {
+  title: string;
+  href: string;
+  bookAuthor: string;
+  reviewer: string;
+  summary: string;
+  cover: ImageView | null;
 };
 
 export type ContentPageData = {

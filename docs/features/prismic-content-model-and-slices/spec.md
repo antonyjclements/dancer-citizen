@@ -2,7 +2,7 @@
 title: Prismic Content Model and Slices
 status: active
 created: 2026-05-25
-updated: 2026-11-05
+updated: 2026-11-10
 tags:
   - prismic
   - slices
@@ -37,14 +37,16 @@ The Prismic content model gives editors repeatable issue, article, and content p
 - Shared slices are rendered by the React slice renderer in `apps/react-site/src/components/Slices.tsx`.
 - Each shared slice exposes a `Hide` toggle. The renderer omits slices whose `primary.hide` is `true`, including on `/submissions`.
 - The CMS API returns Prismic body payloads to the React app without requiring a site rebuild after CMS changes.
+- Rich Text Sections display their optional Heading as a level-two heading above the Body in preview and on published pages.
 - Rich text rendering is centralized in the React rich-text component, including paragraph, heading, list, hyperlink, article-reference, and donation-link rendering rules.
 - Article rich text and quotes can receive article reference context; when a reference location matches body text, the renderer injects linked superscript markers that point to the article references section.
-- Images and galleries render Prismic images when present, fill missing alt text from nearby caption/credit/title context, and show pending-import placeholders when missing.
+- Images and galleries render Prismic images when present and use available caption text as a fallback for missing alt text. Gallery thumbnails open a larger image viewer.
 - Video embeds detect YouTube URLs, render a thumbnail with a play button, and swap to an inline `youtube-nocookie.com` iframe when played.
 - Video embeds fall back to a "Watch video" outbound link when a non-YouTube embed URL exists and a pending-import placeholder when absent.
 - Form embeds currently render a placeholder message until providers are confirmed.
 - File links render an "Open file" link when a media link is present and a pending-import message when absent.
 - Linked tiles and biography/contributor lists render structured lists from slice items.
+- The Book Reviews slice lets editors build an issue's review listing on a Content Page.
 - Biography Lists give CMS editors control over each list's heading, membership, and ordering, including on Editors / Staff.
 - Contributor lists normalize imported legacy title-link JSON into readable names, same-page anchors, issue labels, and inline `read more` links.
 - Rich text PayPal donation links render as outlined button-style external links that open in a new tab.
@@ -85,6 +87,12 @@ The Prismic content model gives editors repeatable issue, article, and content p
 - The toggle applies wherever these shared slices are rendered. It does not control the page heading or the direct submission form appended outside the slice zone.
 - Model definitions must be synced to Prismic before editors can use the new field; publishing follows the existing CMS cache/preview behavior.
 
+### GALLERY-001 — Readers can inspect gallery images
+
+- Galleries display their optional heading and a responsive grid of consistently sized thumbnails in CMS order. Thumbnails show the whole image and skip entries without an image.
+- Selecting a thumbnail opens that image in a modal sized to the viewport. The viewer shows any authored caption and credit. With multiple images, readers can navigate with the Previous and Next controls or the Left and Right arrow keys.
+- The Close control, Escape, and clicking the backdrop dismiss the viewer. Focus returns to the thumbnail that opened it.
+
 ### BIO-001 — CMS-authored biography lists
 
 - Each `BiographyList` slice exposes the existing plain-text `heading` field and repeatable biography items retaining the existing name, summary, image, and optional linked article fields.
@@ -105,6 +113,18 @@ The Prismic content model gives editors repeatable issue, article, and content p
 - Missing or empty item arrays render safely without placeholder people or generated groups.
 - This contract does not require destructive field removal or an automatic rewrite of published documents. The existing `heading` and repeatable item fields remain unchanged.
 - Existing Editors / Staff “In Memoriam” behavior for Jane Alexandre is preserved independently of her list or position. Role labels are not synthesized.
+
+### BOOK-001 — Editors can assemble a book review listing
+
+- A Content Page accepts a Book Reviews slice with an optional heading and ordered review items. Each item has a book title, an Article Page link, and optional book author, reviewer, teaser, and cover.
+- Readers see full-card article links in the editor's order. Cards show the whole cover, use a quiet placeholder when the cover is absent, and stack in one column on narrow screens.
+- Hidden slices and slices with no complete items render no review section. Items with a blank title or a missing, broken, or non-article link are omitted.
+- Editors can include the Content Page in an issue's table of contents through the existing issue ordering or tag workflow.
+
+### BOOK-002 — Readers can return to the review listing
+
+- An Article Page whose Parent section points to a Content Page with visible review cards shows a link back to that page. The issue table of contents link remains available in the article's bottom navigation.
+- A missing, broken, or inapplicable Parent section preserves existing article navigation.
 
 ## Boundaries and Non-Goals
 

@@ -53,6 +53,18 @@ Shared body components, including those on `/submissions`, have a **Hide** toggl
 
 The field definitions live in `slices/*/model.json`. Sync the updated shared slice models to the Prismic repository before using the toggle in the editor, then publish the page normally. This repository no longer includes Slice Machine configuration or a model-push command; deployment of the React app alone does not sync CMS models.
 
+## Publishing Book Reviews
+
+Deploy the site and sync the Book Reviews slice and updated Content Page model to Prismic using `slices/BookReviews/model.json` and `customtypes/content_page/index.json`.
+
+1. Create each review as a regular **Article Page** and link it to its issue.
+2. Create a **Content Page** titled **Book Reviews** with a unique UID, such as `book-reviews-issue-21`. Use **Hero subtitle** for an optional introduction.
+3. Add a **Book Reviews** slice to the page body. Add one item per review with its book title and linked Article Page. Fill in the cover, book author, reviewer, and teaser as available. Drag items into reading order.
+4. Set each review article's **Parent section** to the listing page to give readers a return link.
+5. Add the listing page to the issue's **LinkedTiles** table of contents. For issues that build the table of contents from tags, give the listing the matching issue tag. Tagging review articles themselves in that setup also adds them individually to the issue's table of contents.
+
+Preview the issue, listing, and articles in Prismic before publishing them.
+
 ## Agentic Workflow
 
 This repo uses Agentic Workflow for specs, planning, review, capture, and shipping gates. Start with `AGENTS.md` for task routing, and see `docs/workflow/README.md` plus `docs/workflow/gates.md` for the configured workflow steps, freshness gates, telemetry, and org-knowledge settings.
@@ -94,6 +106,10 @@ Optional environment variables:
 - `SUBMISSION_DOWNLOAD_URL_TTL_SECONDS`: optional signed S3 download URL lifetime. Defaults to 5 minutes.
 
 CDK outputs the CloudFront URL, CMS API URL, submission files bucket, submissions table, and notification topic ARN after deployment.
+
+## Prismic Page Builder Thumbnails
+
+Prismic's live slice thumbnails use [the production slice simulator](https://www.dancercitizen.org/slice-simulator). Set the Page Builder's live preview URL to this route when configuring the editor. The simulator shows draft slices only when loaded from the editor. Use the separate staging preview to review an entire draft page.
 
 ## Staging and Content Preview
 

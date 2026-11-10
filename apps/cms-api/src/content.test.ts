@@ -12,6 +12,7 @@ import {
   getArticle,
   getIssue,
   getMetadataForPath,
+  getPage,
   getSummary,
   linkedTableOfContentsIDs,
   normalizeContentPage,
@@ -42,6 +43,124 @@ function mockClient(overrides: Record<string, any> = {}) {
 
 beforeEach(() => {
   mockClient();
+});
+
+// @spec:BOOK-001, BOOK-002
+describe("book review listings", () => {
+  const review = {
+    title: "Moving in Public",
+    link: { link_type: "Document", type: "article_page", uid: "moving-in-public" },
+  };
+  const listing = doc({
+    uid: "book-reviews-issue-21",
+    data: {
+      title: "Book Reviews",
+      body: [{
+        slice_type: "BookReviews",
+        primary: { heading: "Reviews" },
+        items: [
+          { ...review, title: "   " },
+          {
+            ...review,
+            title: "<em>Moving in Public</em>",
+            book_author: " Elena Reyes ",
+            reviewer: "Maya Chen",
+            summary: "Dance in civic life",
+            image: { url: "https://images.prismic.io/moving.jpg", dimensions: { width: 400, height: 600 } },
+          },
+          { ...review, link: { ...review.link, isBroken: true } },
+          { ...review, link: { ...review.link, type: "content_page" } },
+          { ...review, link: { link_type: "Document" } },
+          { title: "What the Body Keeps", link: { ...review.link, uid: "what-the-body-keeps" } },
+        ],
+      }],
+    },
+  });
+
+  it("normalizes usable cards in editor order with canonical article links and optional media", async () => {
+    const client = mockClient({ getByUID: vi.fn().mockResolvedValue(listing) });
+
+    const result = await getPage(listing.uid);
+
+    expect(result.summary.href).toBe("/book-reviews-issue-21");
+    expect(result.page.data.body[0].items).toEqual([
+      {
+        href: "/articles/moving-in-public",
+        title: "Moving in Public",
+        bookAuthor: "Elena Reyes",
+        reviewer: "Maya Chen",
+        summary: "Dance in civic life",
+        cover: { url: "https://images.prismic.io/moving.jpg", alt: "Moving in Public cover", dimensions: { width: 400, height: 600 } },
+      },
+      {
+        href: "/articles/what-the-body-keeps",
+        title: "What the Body Keeps",
+        bookAuthor: "",
+        reviewer: "",
+        summary: "",
+        cover: null,
+      },
+    ]);
+    expect(client.getByUID).toHaveBeenCalledTimes(1);
+  });
+
+  it("resolves a review article's parent listing while preserving its issue navigation", async () => {
+    const article = doc({
+      type: "article_page",
+      data: {
+        issue: { link_type: "Document", uid: "issue-21" },
+        parent_section: { link_type: "Document", type: "content_page", uid: listing.uid },
+      },
+    });
+    const issue = doc({ type: "issue_page", uid: "issue-21", data: { issue_number: 21 } });
+    mockClient({
+      getByUID: vi.fn()
+        .mockResolvedValueOnce(article)
+        .mockResolvedValueOnce(issue)
+        .mockResolvedValueOnce(listing),
+      getAllBySomeTags: vi.fn().mockResolvedValue([listing]),
+    });
+
+    const result = await getArticle(article.uid);
+
+    expect(result.reviewListing).toMatchObject({ href: "/book-reviews-issue-21", title: "Book Reviews" });
+    expect(result.issue?.href).toBe("/issues/issue-21");
+  });
+
+  it("includes the listing in the issue table of contents as a content page", async () => {
+    const issue = doc({
+      type: "issue_page",
+      uid: "issue-21",
+      data: { issue_number: 21, body: [] },
+    });
+    const client = mockClient({
+      getByUID: vi.fn().mockResolvedValue(issue),
+      getAllByType: vi.fn().mockResolvedValue([issue]),
+      getAllBySomeTags: vi.fn().mockResolvedValue([listing]),
+    });
+
+    expect((await getIssue(issue.uid)).tableOfContents).toMatchObject([
+      { title: "Book Reviews", href: "/book-reviews-issue-21" },
+    ]);
+    expect(client.getAllBySomeTags).toHaveBeenCalledWith(["issue-21"], expect.anything());
+  });
+
+  it.each([
+    { type: "article_page", body: [] },
+    { type: "content_page", body: [] },
+    { type: "content_page", body: [{ slice_type: "BookReviews", primary: { hide: true }, items: [review] }] },
+    { type: "content_page", body: [{ slice_type: "BookReviews", items: [] }] },
+  ])("keeps existing navigation for an inapplicable parent (%j)", async ({ type, body }) => {
+    const article = doc({
+      type: "article_page",
+      data: { parent_section: { link_type: "Document", type, uid: listing.uid } },
+    });
+    mockClient({
+      getByUID: vi.fn().mockResolvedValueOnce(article).mockResolvedValueOnce(doc({ data: { body } })),
+    });
+
+    expect((await getArticle(article.uid)).reviewListing).toBeNull();
+  });
 });
 
 describe("content normalization", () => {

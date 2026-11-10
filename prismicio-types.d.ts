@@ -292,7 +292,18 @@ export type ArticlePageDocument<Lang extends string = string> =
     Lang
   >;
 
-type ContentPageDocumentDataBodySlice = never;
+export type ContentPageDocumentDataBodySlice =
+  | BiographyListSlice
+  | BookReviewsSlice
+  | ContributorListSlice
+  | FileLinkSlice
+  | FormEmbedSlice
+  | GallerySlice
+  | ImageSlice
+  | LinkedTilesSlice
+  | QuoteSlice
+  | RichTextSectionSlice
+  | VideoEmbedSlice;
 
 /**
  * Content for Content Page documents
@@ -1228,6 +1239,25 @@ type LinkedTilesSliceVariation = LinkedTilesSliceDefault;
 export type LinkedTilesSlice = prismic.SharedSlice<
   "LinkedTiles",
   LinkedTilesSliceVariation
+>;
+
+export type BookReviewsSlice = prismic.SharedSlice<
+  "BookReviews",
+  prismic.SharedSliceVariation<
+    "default",
+    {
+      hide: prismic.BooleanField;
+      heading: prismic.KeyTextField;
+    },
+    {
+      title: prismic.KeyTextField;
+      book_author: prismic.KeyTextField;
+      reviewer: prismic.KeyTextField;
+      summary: prismic.KeyTextField;
+      link: prismic.ContentRelationshipField<"article_page">;
+      image: prismic.ImageField<never>;
+    }
+  >
 >;
 
 /**

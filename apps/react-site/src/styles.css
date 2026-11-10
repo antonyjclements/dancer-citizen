@@ -337,6 +337,10 @@ img { max-width: 100%; display: block; }
   line-height: 1.55;
 }
 
+.rich-section > h2 {
+  overflow-wrap: anywhere;
+}
+
 .body-intro {
   margin-top: 0;
   margin-bottom: 40px;
@@ -706,6 +710,138 @@ img { max-width: 100%; display: block; }
   line-height: 1.1;
 }
 
+.book-reviews-hero {
+  padding-block: clamp(32px, 4vw, 56px);
+  padding-inline: max(clamp(20px, 5vw, 72px), calc((100% - 1080px) / 2));
+  border-bottom: 1px solid var(--rule);
+}
+
+.book-reviews-hero h1 {
+  overflow-wrap: anywhere;
+}
+
+.book-reviews-return {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  margin-bottom: 12px;
+  overflow-wrap: anywhere;
+}
+
+.book-reviews-body {
+  width: min(1080px, 100% - 2 * clamp(20px, 5vw, 72px));
+  max-width: none;
+  padding: clamp(28px, 4vw, 48px) 0 clamp(48px, 6vw, 80px);
+}
+
+.book-reviews-body .slices > :not(.book-reviews) {
+  max-width: 672px;
+  margin-inline: auto;
+}
+
+.book-reviews + .book-reviews {
+  margin-top: 48px;
+}
+
+.book-reviews > h2 {
+  margin: 0 0 22px;
+  font: 500 36px/1.1 "Cormorant Garamond", serif;
+  overflow-wrap: anywhere;
+}
+
+.book-review-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(24px, 3vw, 42px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.book-review-grid > li {
+  display: grid;
+  min-width: 0;
+}
+
+.book-review-card {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.book-review-card:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
+.book-review-cover {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: #eae0d2;
+}
+
+.book-review-grid > li:nth-child(even) .book-review-cover {
+  background: #e1e7e7;
+}
+
+.book-review-cover img {
+  position: absolute;
+  inset: 12% 10%;
+  width: 80%;
+  height: 76%;
+  object-fit: contain;
+  filter: drop-shadow(5px 8px 8px rgb(26 26 26 / 22%));
+}
+
+.book-review-cover-placeholder {
+  position: absolute;
+  inset: 12% 32.5%;
+  background: rgb(26 26 26 / 8%);
+  box-shadow: inset 4px 0 rgb(26 26 26 / 7%);
+}
+
+.book-review-copy {
+  padding-block: 18px 20px;
+}
+
+.book-review-copy :is(h2, h3) {
+  margin: 0;
+  font: 500 clamp(30px, 4vw, 45px)/1.05 "Cormorant Garamond", serif;
+}
+
+.book-review-copy p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font: 400 16px/1.55 "DM Sans", sans-serif;
+}
+
+.book-review-copy .book-review-byline {
+  margin-top: 10px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.book-review-action {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+  font: 700 14px/1.5 "DM Sans", sans-serif;
+}
+
+.book-review-card:is(:hover, :focus-visible) .book-review-action > span:first-child {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .book-review-grid {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 36px;
+  }
+}
+
 .toc {
   display: grid;
   gap: 14px;
@@ -736,8 +872,143 @@ blockquote {
 
 .gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(8px, 2vw, 16px);
+}
+
+.gallery:not(:empty) {
+  margin-block: 32px;
+}
+
+.gallery > h2 {
+  grid-column: 1 / -1;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 640px) {
+  .gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.gallery-thumbnail {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  padding: 8px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--paper-deep);
+  color: var(--ink);
+  cursor: zoom-in;
+}
+
+.gallery-thumbnail img,
+.gallery-viewer figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.gallery-expand {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: var(--paper);
+}
+
+.gallery-thumbnail:hover .gallery-expand {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.gallery-thumbnail:focus-visible,
+.gallery-viewer button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+html:has(.gallery-viewer[open]) {
+  overflow: hidden;
+}
+
+.gallery-viewer {
+  width: min(calc(100% - 24px), 1080px);
+  max-width: none;
+  max-height: calc(100% - 24px);
+  padding: 0;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--paper);
+  overscroll-behavior: contain;
+}
+
+.gallery-viewer::backdrop {
+  background: rgb(0 0 0 / 80%);
+}
+
+.gallery-viewer-bar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--ink);
+  font-size: 14px;
+}
+
+.gallery-viewer-nav {
+  display: flex;
+  gap: 6px;
+}
+
+.gallery-viewer button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid #777;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.gallery-viewer button:hover {
+  background: #414141;
+}
+
+.gallery-viewer-nav button {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.gallery-viewer figure {
+  margin: 0;
+}
+
+.gallery-viewer figure img {
+  height: min(72dvh, 780px);
+  background: #101010;
+}
+
+.gallery-viewer figcaption {
+  padding: 12px 16px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.gallery-viewer figcaption small {
+  color: #ccc;
 }
 
 .video iframe {

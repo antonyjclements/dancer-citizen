@@ -2,7 +2,7 @@
 title: Prismic Preview and Cache Behavior
 status: active
 created: 2026-05-25
-updated: 2026-11-05
+updated: 2026-11-10
 tags:
   - prismic
   - preview
@@ -32,6 +32,7 @@ Editors can preview Prismic content through the React/CMS delivery path while pr
 - `/cms/preview/exit` clears the `dc_prismic_ref` cookie and redirects to `/`.
 - CMS API and HTML-shell responses use `Cache-Control: no-store` when a preview cookie is present.
 - The delivery path does not use framework-level tag revalidation because Prismic content is fetched through Lambda APIs at request time.
+- The Prismic Page Builder uses `/slice-simulator` to render live thumbnails from slices sent to its iframe. This route uses the React slice renderer and does not fetch a CMS document.
 
 ## Key Flows
 
@@ -63,6 +64,11 @@ Editors can preview Prismic content through the React/CMS delivery path while pr
 - Preview start/exit and preview JSON/HTML responses remain `no-store`.
 - A preview cookie is scoped to its hostname; staging preview sessions do not enable production previews.
 - Prismic's staging preview registration uses the staging origin and `/cms/preview/start`. A saved draft and linked page must be checked on the deployed site.
+
+### PREV-002 — Live slice thumbnails
+
+- Prismic's Page Builder can send and update draft slices in the simulator iframe. Opening the simulator directly shows instructions for using it from the editor.
+- Draft slice data stays in the iframe. Rich text previews omit raw embed HTML and links cannot navigate the thumbnail iframe.
 
 ## Boundaries and Non-Goals
 

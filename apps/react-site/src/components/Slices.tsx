@@ -1,5 +1,7 @@
 import { isFilled } from "@prismicio/client";
 import type { RichTextField } from "@prismicio/client";
+import { BookReviews } from "./BookReviews";
+import { Gallery } from "./Gallery";
 import { RichText } from "./RichText";
 import { stripLegacyHtml } from "../text";
 
@@ -94,7 +96,16 @@ export function Slices({ slices, references }: { slices: any[] | undefined; refe
         if (slice.primary?.hide === true) return null;
         const key = `${slice.id ?? slice.slice_type}-${index}`;
         if (slice.slice_type === "RichTextSection") {
-          return <section key={key} className="rich-section"><RichText field={slice.primary.body as RichTextField} /></section>;
+          const heading = stripLegacyHtml(slice.primary?.heading);
+          return (
+            <section key={key} className="rich-section">
+              {heading ? <h2>{heading}</h2> : null}
+              <RichText field={slice.primary?.body as RichTextField} />
+            </section>
+          );
+        }
+        if (slice.slice_type === "BookReviews") {
+          return <BookReviews key={key} heading={slice.primary?.heading} cards={slice.items} />;
         }
         if (slice.slice_type === "Quote") {
           return <blockquote key={key}><RichText field={slice.primary.quote as RichTextField} /></blockquote>;
@@ -103,7 +114,7 @@ export function Slices({ slices, references }: { slices: any[] | undefined; refe
           return <figure key={key}><img src={slice.primary.image.url} alt={imageAlt(slice.primary.image, slice.primary.caption)} /><figcaption><RichText field={slice.primary.caption as RichTextField} /></figcaption></figure>;
         }
         if (slice.slice_type === "Gallery") {
-          return <div key={key} className="gallery">{(slice.items ?? []).map((item: any, itemIndex: number) => isFilled.image(item.image) ? <img key={itemIndex} src={item.image.url} alt={imageAlt(item.image, item.caption)} /> : null)}</div>;
+          return <Gallery key={key} slice={slice} />;
         }
         if (slice.slice_type === "VideoEmbed") {
           const url = slice.primary?.embed_url?.url || slice.primary?.embed_url || "";
