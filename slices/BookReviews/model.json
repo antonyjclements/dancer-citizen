@@ -1,0 +1,72 @@
+{
+  "id": "BookReviews",
+  "type": "SharedSlice",
+  "name": "BookReviews",
+  "description": "Book covers and links to review articles",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "description": "Book review cards in editorial order",
+      "docURL": "https://prismic.io/docs/slices",
+      "version": "initial",
+      "primary": {
+        "hide": {
+          "type": "Boolean",
+          "config": {
+            "label": "Hide",
+            "default_value": false
+          }
+        },
+        "heading": {
+          "type": "Text",
+          "config": {
+            "label": "Section heading",
+            "placeholder": "Optional"
+          }
+        }
+      },
+      "items": {
+        "title": {
+          "type": "Text",
+          "config": {
+            "label": "Book title"
+          }
+        },
+        "book_author": {
+          "type": "Text",
+          "config": {
+            "label": "Book author"
+          }
+        },
+        "reviewer": {
+          "type": "Text",
+          "config": {
+            "label": "Reviewer"
+          }
+        },
+        "summary": {
+          "type": "Text",
+          "config": {
+            "label": "Teaser",
+            "placeholder": "A short description of the review"
+          }
+        },
+        "link": {
+          "type": "Link",
+          "config": {
+            "label": "Review article",
+            "select": "document",
+            "customtypes": ["article_page"]
+          }
+        },
+        "image": {
+          "type": "Image",
+          "config": {
+            "label": "Book cover"
+          }
+        }
+      }
+    }
+  ]
+}

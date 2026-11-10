@@ -27,14 +27,20 @@ export function ContentPage() {
   // }
   if (state.status === "error") return <NotFoundPage />;
 
+  const { page, summary } = state.data;
+  const isReviewListing = page.data.body?.some((slice: any) =>
+    slice.slice_type === "BookReviews" && slice.primary?.hide !== true && slice.items?.length,
+  );
+  const subtitle = stripLegacyHtml(summary.subtitle);
+
   return (
     <main>
-      <section className="article-hero">
-        <h1>{stripLegacyHtml(state.data.summary.title)}</h1>
+      <section className={isReviewListing ? "article-hero book-reviews-hero" : "article-hero"}>
+        <h1>{stripLegacyHtml(summary.title)}</h1>
+        {subtitle ? <p className="article-hero-subtitle">{subtitle}</p> : null}
       </section>
-      <section className="body">
-        {state.data.summary.subtitle ? <p className="body-intro">{stripLegacyHtml(state.data.summary.subtitle)}</p> : null}
-        <Slices slices={state.data.page.data.body} />
+      <section className={isReviewListing ? "body book-reviews-body" : "body"}>
+        <Slices slices={page.data.body} />
         {uid === "submissions" ? <SubmissionForm /> : null}
       </section>
     </main>

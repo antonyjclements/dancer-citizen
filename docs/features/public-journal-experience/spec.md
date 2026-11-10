@@ -51,7 +51,7 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - Route-specific article, issue, and content-page social metadata is returned by the HTML-shell Lambda before the React app hydrates.
 - Legacy issue article URLs shaped like `/issue-13/akari-komura/` redirect to `/articles/issue-13--akari-komura`, and legacy issue URLs shaped like `/issue-13/` redirect to `/issues/issue-13`.
 - Prismic images render with non-empty alt text from the image field when available, falling back to nearby captions, credits, or titles.
-- Content pages render a header and then the Prismic body through `SliceZone`.
+- Content pages display their subtitle directly beneath the title inside the hero when available, then render the Prismic body through `SliceZone`.
 - Contributor list slices decode imported legacy title-link payloads into readable contributor names, same-page anchors, issue labels, and inline `read more` links.
 - The `/submissions` content page renders its Prismic-managed body copy, omitting components explicitly marked `Hide`, so content editors can update public submission guidance without code changes; the direct submission form is appended by the React page.
 - The `/support-us` content page converts the imported PayPal donation text into a button-style external link that opens in a new tab.
@@ -102,7 +102,7 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - `/issues/[uid]` displays the requested issue, non-legacy body slices, a single generated table of contents, and issue navigation.
 - `/articles/[uid]` displays the requested article header, body slices, and issue navigation when the article is linked to an issue.
 - `/articles/[uid]` exposes article-specific social sharing metadata and non-empty image alt text for rendered article media.
-- `/[uid]` displays the requested content page header and body slices.
+- `/[uid]` displays the requested content page title and any subtitle together in the hero, followed by the body slices.
 - `/about` renders imported links as clickable anchors.
 - `/contributors` displays contributor names and issue labels without exposing imported legacy JSON field payloads.
 - `/submissions` renders visible CMS-authored body components and the direct submission form. Components with `primary.hide: true` are omitted per `SLICE-001` in `docs/features/prismic-content-model-and-slices/spec.md`; copy is not filtered based on its text.

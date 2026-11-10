@@ -21,7 +21,9 @@ export function ArticlePage() {
   return (
     <main>
       <section className="article-hero">
-        {state.data.issue ? <Link to={state.data.issue.href}>{state.data.issue.title}</Link> : null}
+        {state.data.reviewListing ? (
+          <Link className="book-reviews-return" to={state.data.reviewListing.href}>Back to {state.data.reviewListing.title}</Link>
+        ) : state.data.issue ? <Link to={state.data.issue.href}>{state.data.issue.title}</Link> : null}
         <h1>{stripLegacyHtml(article.data.hero_title || article.data.title || state.data.summary.title)}</h1>
         {article.data.hero_subtitle ? <p className="article-hero-subtitle">{stripLegacyHtml(article.data.hero_subtitle)}</p> : null}
       </section>

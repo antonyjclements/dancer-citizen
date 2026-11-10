@@ -1,5 +1,6 @@
 import * as prismic from "@prismicio/client";
-import type { RichTextField } from "@prismicio/client";
+import type { ContentRelationshipField, RichTextField } from "@prismicio/client";
+import type { BookReviewsSlice, ContentPageDocumentDataBodySlice } from "../../../prismicio-types";
 import { createPrismicClient, type PreviewContext } from "./prismic";
 
 type DocumentType = "issue_page" | "article_page" | "content_page";
@@ -245,6 +246,43 @@ export function normalizeContentPage(page: AnyDocument): AnyDocument {
   return { ...page, data: { ...page.data, body: linkPlainUrlsInBody(page.data.body ?? []) } };
 }
 
+function linkedUID(link: ContentRelationshipField | undefined, type: DocumentType): string | null {
+  return link?.link_type === "Document" && "uid" in link && link.uid && !link.isBroken && link.type === type
+    ? link.uid
+    : null;
+}
+
+function bookReviewCards(slice: BookReviewsSlice) {
+  return (slice.items ?? []).flatMap((item) => {
+    const uid = linkedUID(item.link, "article_page");
+    const title = cleanText(item.title);
+    if (!title || !uid) return [];
+
+    return [{
+      title,
+      href: getHref("article_page", uid),
+      bookAuthor: cleanText(item.book_author),
+      reviewer: cleanText(item.reviewer),
+      summary: cleanText(item.summary),
+      cover: imageView(item.image, `${title} cover`),
+    }];
+  });
+}
+
+async function getReviewListing(client: ReturnType<typeof createPrismicClient>, link: ContentRelationshipField | undefined) {
+  const uid = linkedUID(link, "content_page");
+  if (!uid) return null;
+
+  const page = await client.getByUID("content_page", uid).catch(() => null) as unknown as AnyDocument | null;
+  const hasReviewCards = page?.data.body?.some((slice: ContentPageDocumentDataBodySlice) =>
+    slice.slice_type === "BookReviews" && slice.primary?.hide !== true && bookReviewCards(slice).length > 0,
+  );
+  if (!page || !hasReviewCards) return null;
+
+  const { title, href } = getSummary(page);
+  return { title, href };
+}
+
 function articleImage(article: AnyDocument): ImageView | null {
   const title = cleanText(article.data.meta_title) || documentTitle(article);
   const bodyImage = (article.data.body ?? []).find((slice: any) => slice.slice_type === "Image" && prismic.isFilled.image(slice.primary?.image))?.primary?.image;
@@ -272,29 +310,46 @@ export async function getIssue(uid: string, context: PreviewContext = {}) {
   };
 }
 
+// @spec BOOK-002
 export async function getArticle(uid: string, context: PreviewContext = {}) {
   const client = createPrismicClient(context);
   const article = await client.getByUID("article_page", uid) as unknown as AnyDocument;
   const issueLink = article.data.issue;
-  const issue = issueLink?.link_type === "Document" && !issueLink.isBroken && issueLink.uid
-    ? await client.getByUID("issue_page", issueLink.uid).catch(() => null) as unknown as AnyDocument | null
-    : null;
+  const [issue, reviewListing] = await Promise.all([
+    issueLink?.link_type === "Document" && !issueLink.isBroken && issueLink.uid
+      ? client.getByUID("issue_page", issueLink.uid).catch(() => null) as Promise<AnyDocument | null>
+      : null,
+    getReviewListing(client, article.data.parent_section),
+  ]);
   const toc = issue ? (await getIssueChildren(client, issue)).map(getSummary) : [];
   const articleIndex = toc.findIndex((entry) => entry.uid === article.uid);
   return {
     article,
     summary: getSummary(article),
     issue: issue ? getSummary(issue) : null,
+    reviewListing,
     previousArticle: articleIndex > 0 ? toc[articleIndex - 1] : null,
     nextArticle: articleIndex >= 0 ? toc[articleIndex + 1] ?? null : null,
   };
 }
 
+// @spec BOOK-001
 export async function getPage(uid: string, context: PreviewContext = {}) {
   const client = createPrismicClient(context);
   const page = await client.getByUID("content_page", uid) as unknown as AnyDocument;
   const normalizedPage = normalizeContentPage(page);
-  return { page: normalizedPage, summary: getSummary(normalizedPage) };
+  const body = (normalizedPage.data.body ?? []).map((slice: ContentPageDocumentDataBodySlice) => {
+    if (slice.slice_type !== "BookReviews") return slice;
+    return {
+      ...slice,
+      primary: { ...slice.primary, heading: cleanText(slice.primary?.heading) },
+      items: bookReviewCards(slice),
+    };
+  });
+  return {
+    page: { ...normalizedPage, data: { ...normalizedPage.data, body } },
+    summary: getSummary(normalizedPage),
+  };
 }
 
 export async function getMetadataForPath(path: string, context: PreviewContext = {}): Promise<MetadataView> {
