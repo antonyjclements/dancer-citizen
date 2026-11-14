@@ -32,13 +32,13 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 ## Current Behavior
 
 - The home page at `/` renders a static journal hero, the latest issue, an in-memory archive of older issues, a memorial panel, and a newsletter signup panel.
-- Issues are loaded from Prismic `issue_page` documents ordered by `issue_number` descending on the home page.
+- Listed issues are loaded from Prismic `issue_page` documents ordered by `issue_number` descending on the home page. Editors can publish an issue with a future **List on site from** date to share its permanent URL before it appears in the issue listings.
 - Home page latest and archive issue cards render issue thumbnails from `tile_thumbnail`, falling back to `hero_image`, and show a non-image issue placeholder only when Prismic has no usable thumbnail image.
 - Issue pages live at `/issues/[uid]` and are fetched by UID from Prismic.
 - Article pages live at `/articles/[uid]` and are fetched by UID from Prismic.
 - General content pages live at `/[uid]` and are fetched by UID from Prismic.
 - Missing Prismic documents for issue, article, or content pages call `notFound()`.
-- Issue pages render an issue hero, non-legacy issue body slices, a generated table of contents, and previous/next issue navigation.
+- Issue pages render the date, title, and optional subtitle in the issue hero, followed by non-legacy issue body slices, a generated table of contents, and previous/next issue navigation.
 - Issue headers display the same normalized thumbnail as the home page, with the image beside the title on desktop and above it on mobile. Titles and dates remain on a solid background, separate from the image.
 - Issue page `LinkedTiles` body slices are treated as imported legacy table-of-contents placeholders and are not rendered directly; when present, their linked document order drives the generated public TOC.
 - If an issue has no `LinkedTiles` body slice, table of contents entries come from article/content documents tagged with the formatted issue tag for the current issue number.
@@ -67,7 +67,7 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 ### Browse Issues
 
 1. Reader visits `/`.
-2. The home data loader fetches all issues from Prismic.
+2. The home data loader fetches issues from Prismic and filters by **List on site from**.
 3. The first issue is shown as latest issue.
 4. Remaining issues are shown in the archive grid.
 
@@ -122,8 +122,16 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - `/issues/[uid]` displays the home page issue thumbnail (`tile_thumbnail`, falling back to `hero_image`) when available, preserving its aspect ratio and normalized alt text.
 - The image appears above the publication date and title on mobile and beside them on desktop; text stays on a solid background without overlapping the image.
 - Long issue titles wrap without horizontal overflow at narrow mobile widths.
+- When present, the subtitle appears directly below the issue title inside the hero.
 - Issues without an image retain their date and title without an empty image placeholder.
 - The issue body, table of contents, and previous/next issue links remain available below the header.
+
+### ISSUE-002 — Published issues can be listed on a scheduled date
+
+- Issue Page has an optional **List on site from** date (`list_on_site_from`). An empty or missing date makes a published issue eligible for listing immediately.
+- An issue with a future date is excluded from the homepage latest issue and archive and from previous/next links on other issue pages. It becomes eligible at midnight Eastern time on the selected date. Eligible issues keep their issue-number order.
+- A published issue and its published articles can be opened at their permanent URLs before the listing date. The issue retains its table of contents and links to listed neighbors. The listing date is independent of the displayed **Publication date**.
+- A Prismic preview session shows issues available in its preview ref regardless of their listing dates.
 
 ### ISSUE-003 — Issue table of contents displays hero subtitles
 

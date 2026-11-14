@@ -1,4 +1,11 @@
 decisions:
+  - path: docs/decisions/2026-11-14-deploy-production-from-main.md
+    title: Deploy Production From Main
+    date: 2026-11-14
+    status: active
+    tags:
+      - deployment
+      - git
   - path: docs/decisions/2026-11-05-use-isolated-staging-for-prismic-previews.md
     title: Use Isolated Staging for Prismic Previews
     date: 2026-11-05

@@ -32,6 +32,12 @@
           "label": "Publication date"
         }
       },
+      "list_on_site_from": {
+        "type": "Date",
+        "config": {
+          "label": "List on site from"
+        }
+      },
       "hero_title": {
         "type": "Text",
         "config": {

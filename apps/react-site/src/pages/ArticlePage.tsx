@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import { isFilled } from "@prismicio/client";
+import type { ArticlePageDocumentDataReferencesItem } from "../../../../prismicio-types";
 import { getJson, type ArticleData } from "../api";
 import { Loading } from "../components/Loading";
 import { RichText } from "../components/RichText";
@@ -17,6 +18,7 @@ export function ArticlePage() {
   if (state.status === "error") return <NotFoundPage />;
 
   const article = state.data.article;
+  const references: ArticlePageDocumentDataReferencesItem[] | undefined = article.data.references;
 
   return (
     <main>
@@ -28,11 +30,17 @@ export function ArticlePage() {
         {article.data.hero_subtitle ? <p className="article-hero-subtitle">{stripLegacyHtml(article.data.hero_subtitle)}</p> : null}
       </section>
       <section className="body">
-        <Slices slices={article.data.body} references={article.data.references} />
-        {article.data.references?.length ? (
+        <Slices slices={article.data.body} references={references} />
+        {references?.length ? (
           <section className="references" id="references">
             <h2>References</h2>
-            {article.data.references.map((reference: any, index: number) => <p key={index} id={`reference-${index + 1}`}><sup>{index + 1}</sup> {reference.citation || reference.label || reference.location}</p>)}
+            <ol>
+              {references.map((reference, index) => (
+                <li key={index} id={`reference-${index + 1}`}>
+                  {isFilled.richText(reference.reference_text) ? <RichText field={reference.reference_text} /> : reference.location}
+                </li>
+              ))}
+            </ol>
           </section>
         ) : null}
         {isFilled.richText(article.data.works_cited) ? <section className="works"><h2>Works Cited</h2><RichText field={article.data.works_cited} /></section> : null}

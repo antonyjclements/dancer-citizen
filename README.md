@@ -53,6 +53,10 @@ Shared body components, including those on `/submissions`, have a **Hide** toggl
 
 The field definitions live in `slices/*/model.json`. Sync the updated shared slice models to the Prismic repository before using the toggle in the editor, then publish the page normally. This repository no longer includes Slice Machine configuration or a model-push command; deployment of the React app alone does not sync CMS models.
 
+## Adding an Article Abstract
+
+Deploy the site and sync `slices/Abstract/model.json` and `customtypes/article_page/index.json` to Prismic. In the **Article Page** body, add an **Abstract** slice and enter the summary. The site italicizes the entire block automatically and preserves links and other rich text formatting.
+
 ## Publishing Book Reviews
 
 Deploy the site and sync the Book Reviews slice and updated Content Page model to Prismic using `slices/BookReviews/model.json` and `customtypes/content_page/index.json`.
@@ -64,6 +68,12 @@ Deploy the site and sync the Book Reviews slice and updated Content Page model t
 5. Add the listing page to the issue's **LinkedTiles** table of contents. For issues that build the table of contents from tags, give the listing the matching issue tag. Tagging review articles themselves in that setup also adds them individually to the issue's table of contents.
 
 Preview the issue, listing, and articles in Prismic before publishing them.
+
+## Scheduling an Issue Listing
+
+Deploy the site and sync `customtypes/issue_page/index.json` to Prismic to make **List on site from** available on Issue Page documents.
+
+Set **List on site from** to the day the issue should appear on the homepage and in previous/next issue navigation. Publish the issue and its articles when they are ready to share by permanent URL. The listing becomes eligible at midnight Eastern time on the selected day, subject to the usual response caching. Leave the field blank for immediate listing. **Publication date** controls the date displayed to readers.
 
 ## Agentic Workflow
 
@@ -80,6 +90,8 @@ This repo uses Agentic Workflow for specs, planning, review, capture, and shippi
 - Legacy issue URLs such as `/issue-13/` and `/issue-13/akari-komura/` redirect to the current `/issues/issue-13` and `/articles/issue-13--akari-komura` route shape.
 
 ## Deployment
+
+For production, commit and push the release changes, merge them into `main`, and deploy from that merged revision. Verify that the production stack has completed and that the affected routes serve the release.
 
 Build the React app and synthesize/deploy the CDK stack:
 

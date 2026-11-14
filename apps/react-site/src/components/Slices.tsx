@@ -1,5 +1,6 @@
 import { isFilled } from "@prismicio/client";
 import type { RichTextField } from "@prismicio/client";
+import type { ArticlePageDocumentDataReferencesItem } from "../../../../prismicio-types";
 import { BookReviews } from "./BookReviews";
 import { Gallery } from "./Gallery";
 import { RichText } from "./RichText";
@@ -87,7 +88,7 @@ function linkLegacyReadMoreText(field: RichTextField | null | undefined): RichTe
   }) as RichTextField;
 }
 
-export function Slices({ slices, references }: { slices: any[] | undefined; references?: any[] }) {
+export function Slices({ slices, references }: { slices: any[] | undefined; references?: ArticlePageDocumentDataReferencesItem[] }) {
   if (!slices?.some((slice) => slice.primary?.hide !== true)) return null;
 
   return (
@@ -95,12 +96,17 @@ export function Slices({ slices, references }: { slices: any[] | undefined; refe
       {slices.map((slice, index) => {
         if (slice.primary?.hide === true) return null;
         const key = `${slice.id ?? slice.slice_type}-${index}`;
+        // @spec ABS-001
+        if (slice.slice_type === "abstract") {
+          const body = slice.primary?.body as RichTextField | undefined;
+          return isFilled.richText(body) ? <div key={key} className="article-abstract"><RichText field={body} /></div> : null;
+        }
         if (slice.slice_type === "RichTextSection") {
           const heading = stripLegacyHtml(slice.primary?.heading);
           return (
             <section key={key} className="rich-section">
               {heading ? <h2>{heading}</h2> : null}
-              <RichText field={slice.primary?.body as RichTextField} />
+              <RichText field={slice.primary?.body as RichTextField} references={references} />
             </section>
           );
         }
@@ -108,7 +114,7 @@ export function Slices({ slices, references }: { slices: any[] | undefined; refe
           return <BookReviews key={key} heading={slice.primary?.heading} cards={slice.items} />;
         }
         if (slice.slice_type === "Quote") {
-          return <blockquote key={key}><RichText field={slice.primary.quote as RichTextField} /></blockquote>;
+          return <blockquote key={key}><RichText field={slice.primary.quote as RichTextField} references={references} /></blockquote>;
         }
         if (slice.slice_type === "Image" && isFilled.image(slice.primary?.image)) {
           return <figure key={key}><img src={slice.primary.image.url} alt={imageAlt(slice.primary.image, slice.primary.caption)} /><figcaption><RichText field={slice.primary.caption as RichTextField} /></figcaption></figure>;
@@ -176,7 +182,6 @@ export function Slices({ slices, references }: { slices: any[] | undefined; refe
         }
         return <section key={key} className="pending">Pending slice import: {slice.slice_type}</section>;
       })}
-      {references?.length ? null : null}
     </div>
   );
 }

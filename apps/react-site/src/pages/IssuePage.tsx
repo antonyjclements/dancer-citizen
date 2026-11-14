@@ -15,6 +15,8 @@ export function IssuePage() {
   if (state.status === "loading") return <Loading />;
   if (state.status === "error") return <NotFoundPage />;
 
+  const subtitle = stripLegacyHtml(state.data.summary.subtitle);
+
   return (
     <main>
       <section className={`article-hero issue-hero${state.data.summary.thumbnail ? " issue-hero-with-image" : ""}`}>
@@ -30,10 +32,10 @@ export function IssuePage() {
         <div className="issue-hero-copy">
           <div className="hero-kicker">{state.data.summary.publicationDate}</div>
           <h1>{stripLegacyHtml(state.data.summary.title)}</h1>
+          {subtitle ? <p className="article-hero-subtitle">{subtitle}</p> : null}
         </div>
       </section>
       <section className="body">
-        {state.data.summary.subtitle ? <p className="body-intro">{stripLegacyHtml(state.data.summary.subtitle)}</p> : null}
         <Slices slices={state.data.issue.data.body} />
       </section>
       <section className="toc">

@@ -1,0 +1,32 @@
+{
+  "id": "abstract",
+  "type": "SharedSlice",
+  "name": "Abstract",
+  "description": "Italic rich text for an article abstract",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "description": "Italic rich text for an article abstract",
+      "docURL": "https://prismic.io/docs/slices",
+      "version": "initial",
+      "imageUrl": "",
+      "primary": {
+        "body": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Abstract",
+            "multi": "paragraph,strong,em,hyperlink,list-item,o-list-item"
+          }
+        },
+        "hide": {
+          "type": "Boolean",
+          "config": {
+            "label": "Hide",
+            "default_value": false
+          }
+        }
+      }
+    }
+  ]
+}

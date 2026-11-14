@@ -69,7 +69,15 @@ type ContentRelationshipFieldWithData<
   >;
 }[Exclude<TCustomType[number], string>["id"]];
 
-type ArticlePageDocumentDataBodySlice = never;
+type ArticlePageDocumentDataBodySlice =
+  | RichTextSectionSlice
+  | QuoteSlice
+  | ImageSlice
+  | GallerySlice
+  | VideoEmbedSlice
+  | FileLinkSlice
+  | FormEmbedSlice
+  | AbstractSlice;
 
 /**
  * Item in *Article Page → References*
@@ -529,6 +537,17 @@ interface IssuePageDocumentData {
   publication_date: prismic.DateField;
 
   /**
+   * List on site from field in *Issue Page*
+   *
+   * - **Field Type**: Date
+   * - **Placeholder**: *None*
+   * - **API ID Path**: issue_page.list_on_site_from
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/fields/date
+   */
+  list_on_site_from: prismic.DateField;
+
+  /**
    * Hero title field in *Issue Page*
    *
    * - **Field Type**: Text
@@ -647,6 +666,62 @@ export type AllDocumentTypes =
   | ArticlePageDocument
   | ContentPageDocument
   | IssuePageDocument;
+
+/**
+ * Primary content in *Abstract → Default → Primary*
+ */
+export interface AbstractSliceDefaultPrimary {
+  /**
+   * Abstract field in *Abstract → Default → Primary*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: abstract.default.primary.body
+   * - **Documentation**: https://prismic.io/docs/fields/rich-text
+   */
+  body: prismic.RichTextField;
+
+  /**
+   * Hide field in *Abstract → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: false
+   * - **API ID Path**: abstract.default.primary.hide
+   * - **Documentation**: https://prismic.io/docs/fields/boolean
+   */
+  hide: prismic.BooleanField;
+}
+
+/**
+ * Default variation for Abstract Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Italic rich text for an article abstract
+ * - **Documentation**: https://prismic.io/docs/slices
+ */
+export type AbstractSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<AbstractSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *Abstract*
+ */
+type AbstractSliceVariation = AbstractSliceDefault;
+
+/**
+ * Abstract Shared Slice
+ *
+ * - **API ID**: `abstract`
+ * - **Description**: Italic rich text for an article abstract
+ * - **Documentation**: https://prismic.io/docs/slices
+ */
+export type AbstractSlice = prismic.SharedSlice<
+  "abstract",
+  AbstractSliceVariation
+>;
 
 /**
  * Primary content in *BiographyList → Default → Primary*
@@ -1495,6 +1570,10 @@ declare module "@prismicio/client" {
       IssuePageDocumentData,
       IssuePageDocumentDataBodySlice,
       AllDocumentTypes,
+      AbstractSlice,
+      AbstractSliceDefaultPrimary,
+      AbstractSliceVariation,
+      AbstractSliceDefault,
       BiographyListSlice,
       BiographyListSliceDefaultPrimary,
       BiographyListSliceDefaultItem,

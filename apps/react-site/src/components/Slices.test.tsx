@@ -8,6 +8,32 @@ const projectRoot = new URL("../../../../", import.meta.url);
 const contentPageModel = JSON.parse(readFileSync(new URL("customtypes/content_page/index.json", projectRoot), "utf8"));
 const sliceTypes = Object.keys(contentPageModel.json.Main.body.config.choices);
 
+// @spec:ABS-001
+it("renders the Article Page's Abstract slice in order with its rich text formatting", () => {
+  const readModel = (path: string) => JSON.parse(readFileSync(new URL(path, projectRoot), "utf8"));
+  const article = readModel("customtypes/article_page/index.json");
+  const model = readModel("slices/Abstract/model.json");
+  expect(article.json.Main.body.config.choices[model.id]).toEqual({ type: "SharedSlice" });
+  expect(contentPageModel.json.Main.body.config.choices[model.id]).toBeUndefined();
+  expect(readModel("customtypes/issue_page/index.json").json.Main.body.config.choices[model.id]).toBeUndefined();
+  expect(model.variations[0].primary.body.type).toBe("StructuredText");
+
+  const slice = {
+    slice_type: model.id,
+    primary: { body: [
+      { type: "paragraph", text: "Dance in public", spans: [{ type: "strong", start: 0, end: 5 }] },
+      { type: "paragraph", text: "Read more", spans: [{
+        type: "hyperlink", start: 0, end: 9, data: { link_type: "Web", url: "https://example.com" },
+      }] },
+    ] },
+  };
+  const html = renderToStaticMarkup(<Slices slices={[
+    richText("Before"), slice, { ...slice, primary: { ...slice.primary, hide: true } },
+    { ...slice, primary: { body: [] } }, richText("After"),
+  ]} />);
+  expect(html).toContain('<p>Before</p></section><div class="article-abstract"><p><strong>Dance</strong> in public</p><p><a href="https://example.com">Read more</a></p></div><section class="rich-section"><p>After</p>');
+});
+
 function richText(text: string, hide?: unknown) {
   return {
     slice_type: "RichTextSection",
