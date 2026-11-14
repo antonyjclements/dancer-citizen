@@ -48,3 +48,39 @@ it("links back to a review listing while retaining the issue table of contents",
   expect(html).toMatch(/href="\/book-reviews-issue-21"[^>]*>Back to Book Reviews<\/a>/);
   expect(html).toMatch(/href="\/issues\/issue-21"[^>]*>Table of Contents<\/a>/);
 });
+
+// @spec:REF-001
+it("links article excerpts to their numbered Prismic reference text", () => {
+  const paragraph = (text: string) => ({ type: "paragraph", text, spans: [] });
+  const html = renderArticle(null, {
+    article: {
+      id: "1", uid: "example", type: "article_page", tags: [],
+      data: {
+        body: [
+          { slice_type: "RichTextSection", primary: { body: [{
+            type: "paragraph", text: "The first source and the second source.", spans: [
+              { type: "em", start: 4, end: 16 },
+              { type: "hyperlink", start: 21, end: 38, data: { link_type: "Web", url: "https://example.com/source" } },
+            ],
+          }] } },
+          { slice_type: "Quote", primary: { quote: [paragraph("Anyone can lead the dance.")] } },
+        ],
+        references: [
+          { location: "first source", reference_text: [paragraph("First book, p. 12.")] },
+          { location: "the second", reference_text: [paragraph("Second book, p. 5.")] },
+          { location: "An imported excerpt: can lead the dance.", reference_text: [paragraph("Third book, p. 22.")] },
+          { location: "Does not appear", reference_text: [paragraph("Additional reading.")] },
+        ],
+      },
+    },
+  });
+
+  expect(html).toMatch(/<em>first source<\/em><a href="#reference-1"[^>]*><sup>1<\/sup><\/a>/);
+  expect(html).toMatch(/<a href="https:\/\/example.com\/source">the second source<\/a><a href="#reference-2"[^>]*><sup>2<\/sup><\/a>\./);
+  expect(html).toMatch(/<blockquote><p>Anyone can lead the dance\.<a href="#reference-3"[^>]*><sup>3<\/sup><\/a>/);
+  expect(html).not.toContain('href="#reference-4"');
+  expect(html).toMatch(/id="reference-1"[^>]*>.*?<p>First book, p\. 12\.<\/p>/);
+  expect(html).toMatch(/id="reference-2"[^>]*>.*?<p>Second book, p\. 5\.<\/p>/);
+  expect(html).toMatch(/id="reference-3"[^>]*>.*?<p>Third book, p\. 22\.<\/p>/);
+  expect(html).toMatch(/id="reference-4"[^>]*>.*?<p>Additional reading\.<\/p>/);
+});

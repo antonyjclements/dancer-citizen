@@ -337,13 +337,13 @@ img { max-width: 100%; display: block; }
   line-height: 1.55;
 }
 
-.rich-section > h2 {
+.article-abstract {
+  font-style: italic;
   overflow-wrap: anywhere;
 }
 
-.body-intro {
-  margin-top: 0;
-  margin-bottom: 40px;
+.rich-section > h2 {
+  overflow-wrap: anywhere;
 }
 
 .body a {
@@ -854,6 +854,16 @@ img { max-width: 100%; display: block; }
   font-family: "Cormorant Garamond", serif;
   font-size: 28px;
   text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.toc-subtitle {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-family: "DM Sans", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .article-nav {
@@ -1024,6 +1034,10 @@ html:has(.gallery-viewer[open]) {
   max-width: 100%;
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+.references [id] {
+  scroll-margin-top: 7rem;
 }
 
 .references p,

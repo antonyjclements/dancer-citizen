@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const prismicMock = vi.hoisted(() => ({
   client: undefined as any,
@@ -10,6 +10,7 @@ vi.mock("./prismic", () => ({
 
 import {
   getArticle,
+  getHome,
   getIssue,
   getMetadataForPath,
   getPage,
@@ -43,6 +44,76 @@ function mockClient(overrides: Record<string, any> = {}) {
 
 beforeEach(() => {
   mockClient();
+});
+
+// @spec:ISSUE-002
+describe("issue listing dates", () => {
+  const older = doc({ id: "20", uid: "issue-20", type: "issue_page", data: { issue_number: 20 } });
+  const scheduled = doc({
+    id: "21", uid: "issue-21", type: "issue_page",
+    data: { issue_number: 21, list_on_site_from: "2026-11-12" },
+  });
+  const newer = doc({
+    id: "22", uid: "issue-22", type: "issue_page",
+    data: { issue_number: 22, list_on_site_from: null },
+  });
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-12T04:59:59Z"));
+  });
+
+  afterEach(() => vi.useRealTimers());
+
+  it("promotes the issue to the homepage at midnight Eastern on its listing date", async () => {
+    mockClient({ getAllByType: vi.fn().mockResolvedValue([scheduled, older]) });
+
+    const before = await getHome();
+    expect(before.issues.map((issue) => issue.uid)).toEqual([older.uid]);
+    expect(before.latestIssue?.uid).toBe(older.uid);
+
+    vi.setSystemTime(new Date("2026-11-12T05:00:00Z"));
+    const after = await getHome();
+    expect(after.issues.map((issue) => issue.uid)).toEqual([scheduled.uid, older.uid]);
+    expect(after.latestIssue?.uid).toBe(scheduled.uid);
+  });
+
+  it("skips future issues in public navigation but still loads them and their articles by URL", async () => {
+    const article = doc({
+      uid: "issue-21--essay", type: "article_page",
+      data: { issue: { link_type: "Document", uid: scheduled.uid } },
+    });
+    mockClient({
+      getByUID: vi.fn(async (_type, uid) => [older, scheduled, newer, article].find((entry) => entry.uid === uid)),
+      getAllByType: vi.fn().mockResolvedValue([older, scheduled, newer]),
+      getAllBySomeTags: vi.fn(async (tags) => tags.includes(scheduled.uid) ? [article] : []),
+    });
+
+    expect((await getIssue(older.uid)).nextIssue?.uid).toBe(newer.uid);
+    expect((await getIssue(newer.uid)).previousIssue?.uid).toBe(older.uid);
+
+    const direct = await getIssue(scheduled.uid);
+    expect(direct.summary.href).toBe(`/issues/${scheduled.uid}`);
+    expect(direct.tableOfContents.map((entry) => entry.href)).toEqual([`/articles/${article.uid}`]);
+    expect(direct.previousIssue?.uid).toBe(older.uid);
+    expect(direct.nextIssue?.uid).toBe(newer.uid);
+    expect((await getArticle(article.uid)).issue?.uid).toBe(scheduled.uid);
+
+    vi.setSystemTime(new Date("2026-11-12T05:00:00Z"));
+    expect((await getIssue(newer.uid)).previousIssue?.uid).toBe(scheduled.uid);
+  });
+
+  it("shows scheduled issues in homepage and navigation previews", async () => {
+    mockClient({
+      getByUID: vi.fn().mockResolvedValue(older),
+      getAllByType: vi.fn().mockResolvedValueOnce([scheduled, older]).mockResolvedValueOnce([older, scheduled]),
+      getAllBySomeTags: vi.fn().mockResolvedValue([]),
+    });
+    const preview = { ref: "preview-ref" };
+
+    expect((await getHome(preview)).latestIssue?.uid).toBe(scheduled.uid);
+    expect((await getIssue(older.uid, preview)).nextIssue?.uid).toBe(scheduled.uid);
+  });
 });
 
 // @spec:BOOK-001, BOOK-002
@@ -227,6 +298,7 @@ describe("content normalization", () => {
     expect(ids).toEqual(["b", "a"]);
   });
 
+  // @spec:ISSUE-003
   it("returns issue table of contents in linked document order and removes legacy LinkedTiles from issue body", async () => {
     const issue = doc({
       id: "issue",
@@ -247,8 +319,11 @@ describe("content normalization", () => {
         ],
       },
     });
-    const articleA = doc({ id: "a", uid: "alpha", type: "article_page", data: { title: "Alpha" } });
-    const articleB = doc({ id: "b", uid: "bravo", type: "article_page", data: { title: "Bravo" } });
+    const articleA = doc({ id: "a", uid: "alpha", type: "article_page", data: { title: "Alpha", tile_summary: "Tile summary" } });
+    const articleB = doc({
+      id: "b", uid: "bravo", type: "article_page",
+      data: { hero_title: "Bravo", hero_subtitle: "Movement &amp; <em>memory</em>", tile_summary: "Tile summary" },
+    });
     const client = mockClient({
       getByUID: vi.fn().mockResolvedValue(issue),
       getAllByType: vi.fn().mockResolvedValue([issue]),
@@ -258,7 +333,10 @@ describe("content normalization", () => {
     const result = await getIssue("issue-20");
 
     expect(result.issue.data.body.map((slice: any) => slice.slice_type)).toEqual(["RichTextSection"]);
-    expect(result.tableOfContents.map((entry) => entry.uid)).toEqual(["bravo", "alpha"]);
+    expect(result.tableOfContents).toMatchObject([
+      { uid: "bravo", title: "Bravo", subtitle: "Movement & memory" },
+      { uid: "alpha", title: "Alpha", subtitle: "" },
+    ]);
     expect(client.getAllByIDs).toHaveBeenCalledWith(["b", "a"]);
   });
 

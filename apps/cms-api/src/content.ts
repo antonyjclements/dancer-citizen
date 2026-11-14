@@ -70,6 +70,25 @@ function publicationDate(value: unknown): string {
   return new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(new Date(`${value}T00:00:00`));
 }
 
+const issueListingDateFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/New_York",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+function filterListedIssues(issues: AnyDocument[], context: PreviewContext, currentIssueUid?: string): AnyDocument[] {
+  if (context.ref) return issues;
+
+  const parts = issueListingDateFormatter.formatToParts(new Date());
+  const { year, month, day } = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  const today = `${year}-${month}-${day}`;
+  return issues.filter((issue) => {
+    const listingDate = issue.data.list_on_site_from;
+    return issue.uid === currentIssueUid || !listingDate || listingDate <= today;
+  });
+}
+
 function issueNumberFromTags(tags: string[]): number | null {
   const tag = tags.find((entry) => /^issue-\d+$/i.test(entry));
   if (!tag) return null;
@@ -289,24 +308,28 @@ function articleImage(article: AnyDocument): ImageView | null {
   return imageView(article.data.hero_image, title) || imageView(article.data.tile_thumbnail, title) || imageView(bodyImage, title);
 }
 
+// @spec ISSUE-002
 export async function getHome(context: PreviewContext = {}) {
   const client = createPrismicClient(context);
   const issues = await client.getAllByType("issue_page", { orderings: [{ field: "my.issue_page.issue_number", direction: "desc" }] }) as unknown as AnyDocument[];
-  return { issues: issues.map(getSummary), latestIssue: issues[0] ? getSummary(issues[0]) : null };
+  const summaries = filterListedIssues(issues, context).map(getSummary);
+  return { issues: summaries, latestIssue: summaries[0] ?? null };
 }
 
+// @spec ISSUE-002
 export async function getIssue(uid: string, context: PreviewContext = {}) {
   const client = createPrismicClient(context);
   const issue = await client.getByUID("issue_page", uid) as unknown as AnyDocument;
   const allIssues = await client.getAllByType("issue_page", { orderings: [{ field: "my.issue_page.issue_number", direction: "asc" }] }) as unknown as AnyDocument[];
-  const issueIndex = allIssues.findIndex((entry) => entry.uid === issue.uid);
+  const navigationIssues = filterListedIssues(allIssues, context, issue.uid);
+  const issueIndex = navigationIssues.findIndex((entry) => entry.uid === issue.uid);
   const children = await getIssueChildren(client, issue);
   return {
     issue: { ...issue, data: { ...issue.data, body: displayIssueBody(issue) } },
     summary: getSummary(issue),
-    tableOfContents: children.map(getSummary),
-    previousIssue: issueIndex > 0 ? getSummary(allIssues[issueIndex - 1]) : null,
-    nextIssue: issueIndex >= 0 && allIssues[issueIndex + 1] ? getSummary(allIssues[issueIndex + 1]) : null,
+    tableOfContents: children.map((child) => ({ ...getSummary(child), subtitle: cleanText(child.data.hero_subtitle) })),
+    previousIssue: issueIndex > 0 ? getSummary(navigationIssues[issueIndex - 1]) : null,
+    nextIssue: issueIndex >= 0 && navigationIssues[issueIndex + 1] ? getSummary(navigationIssues[issueIndex + 1]) : null,
   };
 }
 

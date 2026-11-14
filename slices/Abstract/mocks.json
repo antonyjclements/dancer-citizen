@@ -1,0 +1,24 @@
+[
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"body": {
+				"__TYPE__": "StructuredTextContent",
+				"value": [
+					{
+						"type": "paragraph",
+						"content": {
+							"text": "This article explores how dance creates opportunities for people to gather, participate, and shape civic life."
+						}
+					}
+				]
+			},
+			"hide": {
+				"__TYPE__": "BooleanContent",
+				"value": false
+			}
+		},
+		"items": []
+	}
+]

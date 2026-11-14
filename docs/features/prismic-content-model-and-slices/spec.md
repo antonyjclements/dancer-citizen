@@ -32,14 +32,14 @@ The Prismic content model gives editors repeatable issue, article, and content p
 - Repeatable custom types exist for `issue_page`, `article_page`, and `content_page`.
 - All three document types include UID, title, hero fields, tile fields, and a body made from shared slices.
 - Issue pages include `issue_number`, `publication_date`, hero image/credit, tile metadata, and a body that can use rich text, linked tiles, quotes, images, galleries, videos, file links, and form embeds.
-- Article pages include SEO fields, hero fields, body slices, references, works cited, relationship links, and tile metadata.
+- Article pages include SEO fields, hero fields, body slices (including Abstract), references, works cited, relationship links, and tile metadata.
 - Content pages include SEO fields, hero fields, body slices, relationship links, navigation/sitemap settings, and tile metadata.
 - Shared slices are rendered by the React slice renderer in `apps/react-site/src/components/Slices.tsx`.
 - Each shared slice exposes a `Hide` toggle. The renderer omits slices whose `primary.hide` is `true`, including on `/submissions`.
 - The CMS API returns Prismic body payloads to the React app without requiring a site rebuild after CMS changes.
 - Rich Text Sections display their optional Heading as a level-two heading above the Body in preview and on published pages.
 - Rich text rendering is centralized in the React rich-text component, including paragraph, heading, list, hyperlink, article-reference, and donation-link rendering rules.
-- Article rich text and quotes can receive article reference context; when a reference location matches body text, the renderer injects linked superscript markers that point to the article references section.
+- Article references use **Location** for a verbatim excerpt of the body or quote and **Reference text** for the citation. Correct reversed or mismatched fields in Prismic.
 - Images and galleries render Prismic images when present and use available caption text as a fallback for missing alt text. Gallery thumbnails open a larger image viewer.
 - Video embeds detect YouTube URLs, render a thumbnail with a play button, and swap to an inline `youtube-nocookie.com` iframe when played.
 - Video embeds fall back to a "Watch video" outbound link when a non-YouTube embed URL exists and a pending-import placeholder when absent.
@@ -73,7 +73,6 @@ The Prismic content model gives editors repeatable issue, article, and content p
 - The React app can render Prismic body payloads from `/cms/*` responses without requiring a site rebuild after CMS changes.
 - Shared rich text uses the centralized rich-text serializer for paragraphs, headings, lists, and links.
 - External rich-text links opening in a new tab include `rel="noreferrer"`.
-- Article reference markers render as linked superscripts when matching reference locations are provided.
 - PayPal donation links render as readable button-style links with `target="_blank"`.
 - YouTube video slices render inline playable media with thumbnail alt text.
 - Missing optional media renders a clear pending-import fallback rather than crashing.
@@ -86,6 +85,15 @@ The Prismic content model gives editors repeatable issue, article, and content p
 - False, missing, and null values preserve existing rendering. Visible siblings retain their CMS order, and switching the toggle off restores the component.
 - The toggle applies wherever these shared slices are rendered. It does not control the page heading or the direct submission form appended outside the slice zone.
 - Model definitions must be synced to Prismic before editors can use the new field; publishing follows the existing CMS cache/preview behavior.
+
+### ABS-001 — Editors can add an article abstract
+
+- The Article Page body offers an **Abstract** slice with a rich text field and the standard **Hide** toggle.
+- The abstract renders in italics in its authored position, preserving paragraphs, lists, links, and inline formatting. Empty and hidden abstracts are omitted.
+
+### REF-001 — Article excerpts link to their references
+
+- Matching **Location** excerpts render a numbered superscript link to the corresponding citation in References. Unmatched citations stay in the list without an inline marker.
 
 ### GALLERY-001 — Readers can inspect gallery images
 
