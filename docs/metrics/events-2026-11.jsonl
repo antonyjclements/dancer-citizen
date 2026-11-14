@@ -29,3 +29,8 @@
 {"ts":"2026-11-10T18:43:43.443Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
 {"ts":"2026-11-10T20:10:00.134Z","event":"review","detail":"baseline feature review","source":"aw-gate"}
 {"ts":"2026-11-10T20:10:11.852Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
+{"ts":"2026-11-10T20:16:46.107Z","event":"review","detail":"Article Abstract scoped review","source":"aw-gate"}
+{"ts":"2026-11-10T20:16:46.221Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
+{"ts":"2026-11-11T23:54:42.856Z","event":"review","detail":"Local review scoped to scheduled issue listing changes","source":"aw-gate"}
+{"ts":"2026-11-14T20:11:47.685Z","event":"capture","detail":"production from main decision","source":"aw-gate"}
+{"ts":"2026-11-14T20:12:16.002Z","event":"review","detail":"release diff against origin/main","source":"aw-gate"}
