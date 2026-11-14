@@ -38,7 +38,12 @@ export function IssuePage() {
       </section>
       <section className="toc">
         <h2>Table of Contents</h2>
-        {state.data.tableOfContents.map((entry) => <Link key={entry.id} to={entry.href}>{stripLegacyHtml(entry.title)}</Link>)}
+        {state.data.tableOfContents.map((entry) => (
+          <Link key={entry.id} to={entry.href}>
+            {stripLegacyHtml(entry.title)}
+            {entry.subtitle ? <span className="toc-subtitle">{entry.subtitle}</span> : null}
+          </Link>
+        ))}
       </section>
       <nav className="article-nav">
         {state.data.previousIssue ? <Link to={state.data.previousIssue.href}>Previous: {state.data.previousIssue.title}</Link> : <span />}

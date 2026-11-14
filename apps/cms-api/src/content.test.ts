@@ -227,6 +227,7 @@ describe("content normalization", () => {
     expect(ids).toEqual(["b", "a"]);
   });
 
+  // @spec:ISSUE-003
   it("returns issue table of contents in linked document order and removes legacy LinkedTiles from issue body", async () => {
     const issue = doc({
       id: "issue",
@@ -247,8 +248,11 @@ describe("content normalization", () => {
         ],
       },
     });
-    const articleA = doc({ id: "a", uid: "alpha", type: "article_page", data: { title: "Alpha" } });
-    const articleB = doc({ id: "b", uid: "bravo", type: "article_page", data: { title: "Bravo" } });
+    const articleA = doc({ id: "a", uid: "alpha", type: "article_page", data: { title: "Alpha", tile_summary: "Tile summary" } });
+    const articleB = doc({
+      id: "b", uid: "bravo", type: "article_page",
+      data: { hero_title: "Bravo", hero_subtitle: "Movement &amp; <em>memory</em>", tile_summary: "Tile summary" },
+    });
     const client = mockClient({
       getByUID: vi.fn().mockResolvedValue(issue),
       getAllByType: vi.fn().mockResolvedValue([issue]),
@@ -258,7 +262,10 @@ describe("content normalization", () => {
     const result = await getIssue("issue-20");
 
     expect(result.issue.data.body.map((slice: any) => slice.slice_type)).toEqual(["RichTextSection"]);
-    expect(result.tableOfContents.map((entry) => entry.uid)).toEqual(["bravo", "alpha"]);
+    expect(result.tableOfContents).toMatchObject([
+      { uid: "bravo", title: "Bravo", subtitle: "Movement & memory" },
+      { uid: "alpha", title: "Alpha", subtitle: "" },
+    ]);
     expect(client.getAllByIDs).toHaveBeenCalledWith(["b", "a"]);
   });
 
