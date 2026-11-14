@@ -34,3 +34,7 @@
 {"ts":"2026-11-11T23:54:42.856Z","event":"review","detail":"Local review scoped to scheduled issue listing changes","source":"aw-gate"}
 {"ts":"2026-11-14T20:11:47.685Z","event":"capture","detail":"production from main decision","source":"aw-gate"}
 {"ts":"2026-11-14T20:12:16.002Z","event":"review","detail":"release diff against origin/main","source":"aw-gate"}
+{"ts":"2026-11-14T19:44:22.932Z","event":"review","detail":"Scoped code and spec review","source":"aw-gate"}
+{"ts":"2026-11-14T19:44:23.049Z","event":"capture","detail":"No additional capture needed","source":"aw-gate"}
+{"ts":"2026-11-14T19:44:23.162Z","event":"synthesize","detail":"Zero session logs","source":"aw-gate"}
+{"ts":"2026-11-14T19:45:02.899Z","event":"check_workflow_compliance","detail":null,"source":"aw-gate"}
