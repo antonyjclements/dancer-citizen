@@ -2,7 +2,7 @@
 title: Public Journal Experience
 status: active
 created: 2026-05-25
-updated: 2026-11-05
+updated: 2026-11-14
 tags:
   - journal
   - prismic
@@ -124,6 +124,10 @@ The site presents The Dancer-Citizen as an open-access, peer-reviewed journal an
 - Long issue titles wrap without horizontal overflow at narrow mobile widths.
 - Issues without an image retain their date and title without an empty image placeholder.
 - The issue body, table of contents, and previous/next issue links remain available below the header.
+
+### ISSUE-003 — Issue table of contents displays hero subtitles
+
+- Each table-of-contents entry with a Prismic `hero_subtitle` displays it directly below the title in the same link. Entries with a blank or absent hero subtitle display just the linked title.
 
 ### EDITORS-001 — Editors / Staff follows CMS-authored lists
 

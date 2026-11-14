@@ -854,6 +854,16 @@ img { max-width: 100%; display: block; }
   font-family: "Cormorant Garamond", serif;
   font-size: 28px;
   text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.toc-subtitle {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-family: "DM Sans", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .article-nav {

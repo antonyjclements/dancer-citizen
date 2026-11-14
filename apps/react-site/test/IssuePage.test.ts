@@ -47,3 +47,18 @@ describe("issue header imagery", () => {
     expect(html).toContain(`<h1>${data.summary.title}</h1>`);
   });
 });
+
+// @spec:ISSUE-003
+it("shows a hero subtitle below its article title in the same link when present", () => {
+  const data = issueData();
+  const article = { type: "article_page", issueNumber: 17, publicationDate: "", thumbnail: null } as const;
+  data.tableOfContents = [
+    { ...article, id: "1", uid: "movement", title: "Movement", subtitle: "Notes on practice", href: "/articles/movement" },
+    { ...article, id: "2", uid: "memory", title: "Memory", subtitle: "", href: "/articles/memory" },
+  ];
+
+  const html = renderIssue(data);
+
+  expect(html).toMatch(/href="\/articles\/movement"[^>]*>Movement<span[^>]*>Notes on practice<\/span><\/a>/);
+  expect(html).toMatch(/href="\/articles\/memory"[^>]*>Memory<\/a>/);
+});

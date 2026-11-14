@@ -304,7 +304,7 @@ export async function getIssue(uid: string, context: PreviewContext = {}) {
   return {
     issue: { ...issue, data: { ...issue.data, body: displayIssueBody(issue) } },
     summary: getSummary(issue),
-    tableOfContents: children.map(getSummary),
+    tableOfContents: children.map((child) => ({ ...getSummary(child), subtitle: cleanText(child.data.hero_subtitle) })),
     previousIssue: issueIndex > 0 ? getSummary(allIssues[issueIndex - 1]) : null,
     nextIssue: issueIndex >= 0 && allIssues[issueIndex + 1] ? getSummary(allIssues[issueIndex + 1]) : null,
   };
