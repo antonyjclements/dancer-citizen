@@ -93,6 +93,8 @@ This repo uses Agentic Workflow for specs, planning, review, capture, and shippi
 
 For production, commit and push the release changes, merge them into `main`, and deploy from that merged revision. Verify that the production stack has completed and that the affected routes serve the release.
 
+The production build includes the Google Analytics tag configured in `apps/react-site/vite.config.ts`. Staging and the local development server omit the tag.
+
 Build the React app and synthesize/deploy the CDK stack:
 
 ```bash

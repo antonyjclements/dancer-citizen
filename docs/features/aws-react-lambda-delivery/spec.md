@@ -2,7 +2,7 @@
 title: AWS React Lambda Delivery
 status: active
 created: 2026-06-19
-updated: 2026-11-05
+updated: 2026-11-16
 tags:
   - aws
   - deployment
@@ -41,6 +41,7 @@ The site is delivered as a low-cost AWS-native public experience: a Vite/React f
 - The CMS API exposes `/cms/home`, `/cms/issues/:uid`, `/cms/articles/:uid`, `/cms/pages/:uid`, `/cms/meta?path=...`, `/cms/preview/start`, and `/cms/preview/exit`.
 - The HTML-shell Lambda injects route-specific title, description, canonical, Open Graph, and Twitter tags before returning the React app shell.
 - CDK embeds the current built Vite `index.html` into the HTML-shell Lambda at synth/deploy time so document-route HTML points at the current hashed static assets.
+- The production HTML shell loads the Google Analytics tag. Staging and the local development server omit it.
 - CloudFront serves static asset requests from S3, routes `/cms/*` to the CMS API Lambda, and routes public document URLs for articles, issues, and configured top-level content pages to the HTML-shell Lambda.
 - CloudFront routes legacy issue paths shaped like `/issue-13/` and `/issue-13/akari-komura/` to the HTML-shell Lambda, which returns permanent redirects to `/issues/issue-13` and `/articles/issue-13--akari-komura`.
 - The S3 origin is private and readable by CloudFront through origin access control.
@@ -92,6 +93,7 @@ The site is delivered as a low-cost AWS-native public experience: a Vite/React f
 - Static asset routes are served from S3/CloudFront and `/cms/*` routes are served by the API Lambda.
 - CMS API preview responses and HTML-shell preview responses are not cached when a preview cookie is present.
 - Generated React `dist` output and CDK `cdk.out` output are ignored by repo lint/source control.
+- The production HTML shell initializes Google Analytics once with measurement ID `G-W78D36S6Y1`. Staging and the local development server omit the tag.
 
 ### STAGE-001 — Separate staging deployment
 
