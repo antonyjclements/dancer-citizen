@@ -86,3 +86,11 @@
 {"ts":"2026-11-14T19:45:02.958Z","session_id":"d756fbd4-4f75-4cfe-854e-0a39ac8533ce","skill":"aw-ship","source":"skill","schema_version":2,"event":"stage","mode":"full-pr","invocation_id":"toc-release-01a1db8a","workflow_step":"commit"}
 {"ts":"2026-11-14T20:13:02.047Z","session_id":"cb38779e-6fd3-4dc4-b4c7-043db6be2c63","skill":"aw-ship","source":"skill","schema_version":2,"event":"stage","mode":"full-pr","invocation_id":"dc-release-20261114-01a1dbaa","workflow_step":"commit"}
 {"ts":"2026-11-14T20:13:12.938Z","session_id":"cb38779e-6fd3-4dc4-b4c7-043db6be2c63","skill":"aw-ship","source":"skill","schema_version":2,"event":"stage","mode":"full-pr","invocation_id":"dc-release-20261114-01a1dbaa","workflow_step":"commit"}
+{"ts":"2026-11-15T12:33:55.757Z","session_id":"4439b95b-8408-4b97-aee0-0eb0f6aa71f2","skill":"aw-debug","source":"skill"}
+{"ts":"2026-11-16T16:53:11.146Z","session_id":"999165e7-0d93-4f8c-baba-5f0cf018c300","skill":"aw-work","source":"skill","workflow_step":"work"}
+{"ts":"2026-11-16T16:56:44.220Z","session_id":"999165e7-0d93-4f8c-baba-5f0cf018c300","skill":"aw-ship","source":"skill","schema_version":2,"event":"invocation","mode":"full-pr","invocation_id":"a555dab0-b5b5-4279-8781-158ceee8d4d5","workflow_step":"commit_push_pr"}
+{"ts":"2026-11-16T16:56:44.249Z","session_id":"999165e7-0d93-4f8c-baba-5f0cf018c300","skill":"aw-ship","source":"skill","schema_version":2,"event":"stage","mode":"full-pr","invocation_id":"a555dab0-b5b5-4279-8781-158ceee8d4d5","workflow_step":"commit_push_pr"}
+{"ts":"2026-11-16T16:56:44.279Z","session_id":"999165e7-0d93-4f8c-baba-5f0cf018c300","skill":"aw-review","source":"skill","workflow_step":"review"}
+{"ts":"2026-11-16T16:57:31.364Z","session_id":"999165e7-0d93-4f8c-baba-5f0cf018c300","skill":"aw-ship","source":"skill","schema_version":2,"event":"stage","mode":"full-pr","invocation_id":"a555dab0-b5b5-4279-8781-158ceee8d4d5","workflow_step":"commit"}
+{"ts":"2026-11-16T16:57:46.697Z","session_id":"999165e7-0d93-4f8c-baba-5f0cf018c300","skill":"aw-check-workflow-compliance","source":"skill","workflow_step":"check_workflow_compliance"}
+{"ts":"2026-11-16T16:58:01.181Z","session_id":"999165e7-0d93-4f8c-baba-5f0cf018c300","skill":"aw-ship","source":"skill","schema_version":2,"event":"stage","mode":"full-pr","invocation_id":"a555dab0-b5b5-4279-8781-158ceee8d4d5","workflow_step":"commit"}
